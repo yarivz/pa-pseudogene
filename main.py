@@ -1,72 +1,68 @@
-import os
+import argparse
 import sys
-from ftplib import FTP
-from io import StringIO
+import logging
+import threading
+import os
+from glob import iglob
 
-NCBI_FTP_SITE = "ftp.ncbi.nlm.nih.gov"
-PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa/latest_assembly_versions"
+from multiprocessing import Queue
+from ftp_handler import FtpHandler
+from Bio import SeqIO
+
 TARGET_DIR = os.getcwd() + os.sep + "data" + os.sep + "strains"
 
 
+def logger_thread(log_queue):
+    while True:
+        record = log_queue.get()
+        if record is None:
+            break
+        logger = logging.getLogger(record.name)
+        logger.handle(record)
+
+
 def main():
-    """Main entry point for the script."""
+    parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search in Pseudomonas Areguinosa strains')
+    parser.add_argument('-d', '--download', action="store_true",
+                        help='Download all valid PA strains from the refseq ftp for analysis')
+    parser.add_argument('-s', '--sample', type=int, dest='sample_size', default=None,
+                        help='Specify a sample size to limit the amount of strains downloaded')
+    args = parser.parse_args()
+
     if not os.path.exists(TARGET_DIR):
         os.makedirs(TARGET_DIR)
-    ftp = FTP(NCBI_FTP_SITE)
-    ftp.login()
-    strains_dir_listing = get_ftp_root_dir_listing(ftp)
-    download_filtered_strains(ftp, strains_dir_listing)
-    ftp.quit()
 
+    log_queue = Queue()
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(level=logging.DEBUG)
+    handler = logging.FileHandler('pseudogene.log', 'w')
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
+    lp = threading.Thread(target=logger_thread, args=(log_queue,))
+    lp.start()
 
-def get_ftp_root_dir_listing(ftp):
-    ftp.cwd(PA_LATEST_REFSEQ_URL)
-    return ftp.nlst()
+    if args.download:
+        ftp_handler = FtpHandler()
+        logger.info("Downloading Strain files from NCBI FTP (refseq)")
+        ftp_handler.download_strain_files(TARGET_DIR, log_queue, sample_size=args.sample_size)
 
+    add_strain_indices()
+    perform_clustering_on_strains()
 
-def download_filtered_strains(ftp, strains_dir_listing):
-    """
-    Filter out any strain that does not have a features_table / cds_from_genomic from the strain list
-    Filter out all suppressed strains from the strain list
-    """
-
-    for strain_dir in strains_dir_listing:
-        strain_dir_files_list = ftp.nlst(strain_dir)
-        feature_table = [file for file in strain_dir_files_list if strain_dir + "_feature_table.txt" in file][0]
-        cds_from_genomic = [file for file in strain_dir_files_list if strain_dir + "_cds_from_genomic.fna" in file][0]
-        genomic_sequences = [file for file in strain_dir_files_list if strain_dir + "_genomic.fna" in file][0]
-        protein_sequences = [file for file in strain_dir_files_list if strain_dir + "_protein.faa" in file][0]
-        if feature_table or cds_from_genomic:
-            status_file = [file for file in strain_dir_files_list if "assembly_status" in file]
-            if status_file:
-                line_reader = StringIO()
-                ftp.retrlines('RETR ' + status_file[0], line_reader.write)
-                if "suppressed" in line_reader.getvalue():
-                    print("skipping suppressed strain %s" % strain_dir)
-                    line_reader.close()
-                else:
-                    strain_download_dir = TARGET_DIR + os.sep + strain_dir + os.sep
-                    os.mkdir(strain_download_dir)
-                    if feature_table:
-                        ftp.retrbinary("RETR " + feature_table,
-                                       open(strain_download_dir + feature_table[len(strain_dir) + 1:], 'wb').write)
-                    if cds_from_genomic:
-                        ftp.retrbinary("RETR " + cds_from_genomic,
-                                       open(strain_download_dir + cds_from_genomic[len(strain_dir) + 1:], 'wb').write)
-                    if genomic_sequences:
-                        ftp.retrbinary("RETR " + genomic_sequences,
-                                       open(strain_download_dir + genomic_sequences[len(strain_dir) + 1:], 'wb').write)
-                    if protein_sequences:
-                        ftp.retrbinary("RETR " + protein_sequences,
-                                       open(strain_download_dir + protein_sequences[len(strain_dir) + 1:], 'wb').write)
-                    print("Downloaded files for strain %s" % strain_dir)
-        else:
-            print("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
+    logger.info("Finished work, exiting")
+    log_queue.put(None)
+    lp.join()
 
 
 def add_strain_indices():
     """Add indices to each strain sequence header for easier parsing"""
-    pass
+    for root, dirs, files in os.walk(TARGET_DIR):
+        for dir in dirs:
+            protein_file = [f for f in os.listdir(dir) if os.path.isfile(f) and f.endswith('protein.faa')]
+            cds_file = [f for f in os.listdir(dir) if os.path.isfile(f) and f.endswith('cds_from_genomic.fna')]
+            fasta_sequences = SeqIO.parse(open(protein_file), 'fasta')
+            for sequence in fasta_sequences:
+                print(sequence)
 
 
 def perform_clustering_on_strains():
