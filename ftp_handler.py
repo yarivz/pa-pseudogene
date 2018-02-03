@@ -3,27 +3,25 @@ import os
 import logging
 from ftplib import FTP, error_temp
 from io import StringIO
-from logging.handlers import QueueHandler
 from time import sleep
+
+from logging_config import worker_configurer
 
 NCBI_FTP_SITE = "ftp.ncbi.nlm.nih.gov"
 PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa/latest_assembly_versions"
 
-logger = logging.getLogger(__name__)
 NUMBER_OF_PROCESSES = os.cpu_count()
 ftp_handle = FTP(NCBI_FTP_SITE)
 #TODO add syncing for already downloaded strains
 
 
-def download_valid_strains(worker_id, job_queue, log_queue, download_dir, strains_downloaded_counter):
+def download_valid_strains(worker_id, job_queue, log_queue, configurer, download_dir, strains_downloaded_counter):
     """
     Filter out any strain that does not have a features_table / cds_from_genomic
     as well as all suppressed strains from the strain list
     """
-    qh = QueueHandler(log_queue)
-    worker_logger = logging.getLogger(__name__ + "_worker_" + str(worker_id))
-    worker_logger.setLevel(logging.DEBUG)
-    worker_logger.addHandler(qh)
+    configurer(log_queue)
+    logger = logging.getLogger(__name__ + "_worker_" + str(worker_id))
     ftp_con = FTP(NCBI_FTP_SITE)
     ftp_con.login()
     ftp_con.cwd(PA_LATEST_REFSEQ_URL)
@@ -77,11 +75,11 @@ def download_valid_strains(worker_id, job_queue, log_queue, download_dir, strain
                             strains_downloaded_counter.value += 1
                         num_of_strains_downloaded += 1
 
-                        worker_logger.info("Downloaded files for strain %s" % strain_dir)
+                        logger.info("Downloaded files for strain %s" % strain_dir)
                 else:
-                    worker_logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
+                    logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
             else:
-                worker_logger.info("No protein sequences found for strain %s" % strain_dir)
+                logger.info("No protein sequences found for strain %s" % strain_dir)
         except error_temp:
             job_queue.put(strain_dir)
             sleep(2)
@@ -90,12 +88,14 @@ def download_valid_strains(worker_id, job_queue, log_queue, download_dir, strain
 
 
 def download_strain_files(download_dir, log_queue, sample_size=None):
+    logger = logging.getLogger()
     ftp_handle.login()
     job_queue = multiprocessing.Queue()
     get_strains_from_ftp(job_queue, sample_size)
+    logger.info("Starting download of strain files")
     strains_downloaded_counter = multiprocessing.Value('L', 0)
-    workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, log_queue, download_dir,
-                                                                            strains_downloaded_counter))
+    workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, log_queue, worker_configurer,
+                                                                            download_dir, strains_downloaded_counter))
                for i in range(NUMBER_OF_PROCESSES)]
     for w in workers:
         w.start()
@@ -108,6 +108,8 @@ def download_strain_files(download_dir, log_queue, sample_size=None):
 
 
 def get_strains_from_ftp(job_queue, sample_size):
+    logger = logging.getLogger()
+    logger.info("Listing latest PA strains for download")
     ftp_handle.cwd(PA_LATEST_REFSEQ_URL)
     strains_dir_listing = ftp_handle.nlst()
     ftp_handle.quit()

@@ -1,37 +1,22 @@
 import argparse
 import gzip
+import multiprocessing
 import sys
 import logging
-import threading
 import os
 
 from multiprocessing import Queue
 from Bio import SeqIO
 from ftp_handler import download_strain_files
+from logging_config import listener_process, listener_configurer, worker_configurer
 
 DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s %(name)s:%(levelname)s %(module)s:%(lineno)d:  %(message)s')
-handler = logging.FileHandler('pseudogene.log', 'w')
-handler.setLevel(logging.INFO)
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-
-def logger_thread(log_queue):
-    while True:
-        record = log_queue.get()
-        if record is None:
-            break
-        record_logger = logging.getLogger(record.name)
-        record_logger.handle(record)
-
 
 def main():
-    parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search in Pseudomonas Areguinosa strains')
+    parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
+                                                 'in Pseudomonas Areguinosa strains')
     parser.add_argument('-d', '--download', action="store_true",
                         help='Download all valid PA strains from the refseq ftp for analysis')
     parser.add_argument('-s', '--sample', type=int, dest='sample_size', default=None,
@@ -43,24 +28,27 @@ def main():
         parser.print_help()
         exit(0)
 
+    log_queue = multiprocessing.Queue(-1)
+    listener = multiprocessing.Process(target=listener_process,
+                                       args=(log_queue, listener_configurer))
+    listener.start()
+    worker_configurer(log_queue)
+    logger = logging.getLogger()
+
     if not os.path.exists(STRAINS_DIR):
         os.makedirs(STRAINS_DIR)
 
-    log_queue = Queue()
-    lp = threading.Thread(target=logger_thread, args=(log_queue,))
     try:
-        lp.start()
+        logger.info("Starting work")
         if args.download:
-            logger.info("Downloading Strain files from NCBI FTP (refseq)")
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
         if args.cluster:
             aggregated_proteins_file_path = create_all_strains_file_with_indices()
             perform_clustering_on_strains(aggregated_proteins_file_path)
         logger.info("Finished work, exiting")
     finally:
-        log_queue.put(None)
-        lp.join()
-        log_queue.close()
+        log_queue.put_nowait(None)
+        listener.join()
 
 
 def create_all_strains_file_with_indices():
@@ -68,7 +56,8 @@ def create_all_strains_file_with_indices():
     Add indices to each strain sequence header for easier parsing
     and combine all strains protein sequences into single fasta file for clustering
     """
-    logger.info("Indexing proteins by strain index + location in gene index")
+    logger = logging.getLogger()
+    logger.info("Indexing proteins by their strain index & protein index in strain gene")
     aggregated_proteins_file_path = os.path.join(DATA_DIR, 'all_strains_proteins.fasta')
     if os.path.exists(aggregated_proteins_file_path):
         os.remove(aggregated_proteins_file_path)
@@ -117,6 +106,7 @@ def create_all_strains_file_with_indices():
 
 def perform_clustering_on_strains(aggregated_proteins_file_path):
     """Run the CD-HIT program to perform clustering on the strains"""
+    logger = logging.getLogger()
     logger.info("Running CD-HIT on combined proteins file to create clustering")
     clusterring_output_file = os.path.join(DATA_DIR, 'protein_clusters.txt')
     cd_hit_args = ['cd-hit', '-i', aggregated_proteins_file_path, '-o', clusterring_output_file, '-c 0.70',
