@@ -75,11 +75,11 @@ def download_valid_strains(worker_id, job_queue, configurer, log_queue, download
                             strains_downloaded_counter.value += 1
                         num_of_strains_downloaded += 1
 
-                        logger.info("Downloaded files for strain %s" % strain_dir)
+                        logger.debug("Downloaded files for strain %s" % strain_dir)
                 else:
-                    logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
+                    logger.warn("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
             else:
-                logger.info("No protein sequences found for strain %s" % strain_dir)
+                logger.warn("No protein sequences found for strain %s" % strain_dir)
         except error_temp or TimeoutError:
             job_queue.put(strain_dir)
             sleep(2)

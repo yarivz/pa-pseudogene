@@ -9,6 +9,7 @@ def listener_configurer():
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     root.addHandler(file_handler)
     root.addHandler(console_handler)
@@ -18,7 +19,6 @@ def worker_configurer(queue):
     q_handler = QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(q_handler)
-    root.setLevel(logging.DEBUG)
 
 
 def listener_process(queue, configurer):
