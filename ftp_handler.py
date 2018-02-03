@@ -3,15 +3,15 @@ import os
 import logging
 from ftplib import FTP, error_temp
 from io import StringIO
-import gzip
-import shutil
-import glob
 from logging.handlers import QueueHandler
 from time import sleep
 
 NCBI_FTP_SITE = "ftp.ncbi.nlm.nih.gov"
 PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa/latest_assembly_versions"
 
+logger = logging.getLogger(__name__)
+NUMBER_OF_PROCESSES = os.cpu_count()
+ftp_handle = FTP(NCBI_FTP_SITE)
 #TODO add syncing for already downloaded strains
 
 
@@ -21,9 +21,9 @@ def download_valid_strains(worker_id, job_queue, log_queue, download_dir, strain
     as well as all suppressed strains from the strain list
     """
     qh = QueueHandler(log_queue)
-    logger = logging.getLogger(__name__ + "_worker_" + str(worker_id))
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(qh)
+    worker_logger = logging.getLogger(__name__ + "_worker_" + str(worker_id))
+    worker_logger.setLevel(logging.DEBUG)
+    worker_logger.addHandler(qh)
     ftp_con = FTP(NCBI_FTP_SITE)
     ftp_con.login()
     ftp_con.cwd(PA_LATEST_REFSEQ_URL)
@@ -77,59 +77,44 @@ def download_valid_strains(worker_id, job_queue, log_queue, download_dir, strain
                             strains_downloaded_counter.value += 1
                         num_of_strains_downloaded += 1
 
-                        logger.info("Downloaded files for strain %s" % strain_dir)
+                        worker_logger.info("Downloaded files for strain %s" % strain_dir)
                 else:
-                    logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
+                    worker_logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
             else:
-                logger.info("No protein sequences found for strain %s" % strain_dir)
+                worker_logger.info("No protein sequences found for strain %s" % strain_dir)
         except error_temp:
             job_queue.put(strain_dir)
             sleep(2)
-    logger.debug("Worker process {} Downloaded {} strains".format(worker_id, num_of_strains_downloaded))
     ftp_con.quit()
     exit(0)
 
 
-def unzip_files_if_needed(strain_dir):
-    for gzip_path in glob.glob(strain_dir + "/*.gz"):
-        with gzip.open(gzip_path, 'rb') as f_in, open(gzip_path[:-3], 'wb') as f_out:
-            shutil.copyfileobj(f_in, f_out)
-            os.remove(f_in)
+def download_strain_files(download_dir, log_queue, sample_size=None):
+    ftp_handle.login()
+    job_queue = multiprocessing.Queue()
+    get_strains_from_ftp(job_queue, sample_size)
+    strains_downloaded_counter = multiprocessing.Value('L', 0)
+    workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, log_queue, download_dir,
+                                                                            strains_downloaded_counter))
+               for i in range(NUMBER_OF_PROCESSES)]
+    for w in workers:
+        w.start()
+    job_queue.put(None)
+    for w in workers:
+        w.join()
+    with strains_downloaded_counter.get_lock():
+        logger.info("Finished downloading strain files, %s strains downloaded" % strains_downloaded_counter.value)
+    job_queue.close()
 
 
-class FtpHandler:
-    def __init__(self):
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(level=logging.DEBUG)
-        handler = logging.FileHandler('pseudogene.log', 'w')
-        handler.setLevel(logging.INFO)
-        self.logger.addHandler(handler)
-        self.ftp = FTP(NCBI_FTP_SITE)
-        self.ftp.login()
-        self.NUMBER_OF_PROCESSES = os.cpu_count()
-
-    def download_strain_files(self, download_dir, log_queue, sample_size=None):
-        job_queue = multiprocessing.Queue()
-        self.get_strains_from_ftp(job_queue, sample_size)
-        strains_downloaded_counter = multiprocessing.Value('L', 0)
-        workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, log_queue, download_dir,
-                                                                                strains_downloaded_counter))
-                   for i in range(self.NUMBER_OF_PROCESSES)]
-        for w in workers:
-            w.start()
-        job_queue.put(None)
-        for w in workers:
-            w.join()
-        self.logger.info("Finished downloading strain files")
-
-    def get_strains_from_ftp(self, job_queue, sample_size):
-        self.ftp.cwd(PA_LATEST_REFSEQ_URL)
-        strains_dir_listing = self.ftp.nlst()
-        self.ftp.quit()
-        if sample_size:
-            strains_dir_listing = strains_dir_listing[:sample_size]
-        for strain_dir in strains_dir_listing:
-            job_queue.put(strain_dir)
+def get_strains_from_ftp(job_queue, sample_size):
+    ftp_handle.cwd(PA_LATEST_REFSEQ_URL)
+    strains_dir_listing = ftp_handle.nlst()
+    ftp_handle.quit()
+    if sample_size:
+        strains_dir_listing = strains_dir_listing[:sample_size]
+    for strain_dir in strains_dir_listing:
+        job_queue.put(strain_dir)
 
 
 
