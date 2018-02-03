@@ -1,6 +1,8 @@
 import logging
+import multiprocessing
 from logging.handlers import QueueHandler
 
+log_queue = multiprocessing.Queue(-1)
 
 def listener_configurer():
     root = logging.getLogger()

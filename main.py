@@ -9,6 +9,8 @@ from multiprocessing import Queue
 from Bio import SeqIO
 from constants import STRAINS_DIR, DATA_DIR
 from ftp_handler import download_strain_files
+from logging_config import listener_process, listener_configurer, worker_configurer, log_queue
+from protein_preprocessor import create_all_strains_file_with_indices
 
 
 def main():
@@ -25,7 +27,6 @@ def main():
         parser.print_help()
         exit(0)
 
-    log_queue = multiprocessing.Queue(-1)
     listener = multiprocessing.Process(target=listener_process,
                                        args=(log_queue, listener_configurer))
     listener.start()
@@ -38,7 +39,7 @@ def main():
     try:
         logger.info("Starting work")
         if args.download:
-            download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
+            download_strain_files(STRAINS_DIR, sample_size=args.sample_size)
         if args.cluster:
             aggregated_proteins_file_path = create_all_strains_file_with_indices()
             perform_clustering_on_strains(aggregated_proteins_file_path)

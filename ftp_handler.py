@@ -5,17 +5,17 @@ from ftplib import FTP, error_temp
 from io import StringIO
 from time import sleep
 
-from logging_config import worker_configurer
+from logging_config import worker_configurer, log_queue
+from constants import NUMBER_OF_PROCESSES, STRAIN_INDEX_FILE, PROTEIN_FILE_PATTERN, FEATURE_TABLE_PATTERN, \
+    CDS_FROM_GENOMIC_PATTERN
 
 NCBI_FTP_SITE = "ftp.ncbi.nlm.nih.gov"
 PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa/latest_assembly_versions"
-
-NUMBER_OF_PROCESSES = os.cpu_count()
 ftp_handle = FTP(NCBI_FTP_SITE)
 #TODO add syncing for already downloaded strains
 
 
-def download_valid_strains(worker_id, job_queue, log_queue, configurer, download_dir, strains_downloaded_counter):
+def download_valid_strains(worker_id, job_queue, configurer, download_dir, strains_downloaded_counter):
     """
     Filter out any strain that does not have a features_table / cds_from_genomic
     as well as all suppressed strains from the strain list
@@ -87,14 +87,14 @@ def download_valid_strains(worker_id, job_queue, log_queue, configurer, download
     exit(0)
 
 
-def download_strain_files(download_dir, log_queue, sample_size=None):
+def download_strain_files(download_dir, sample_size=None):
     logger = logging.getLogger()
     ftp_handle.login()
     job_queue = multiprocessing.Queue()
     get_strains_from_ftp(job_queue, sample_size)
     logger.info("Starting download of strain files")
     strains_downloaded_counter = multiprocessing.Value('L', 0)
-    workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, log_queue, worker_configurer,
+    workers = [multiprocessing.Process(target=download_valid_strains, args=(i, job_queue, worker_configurer,
                                                                             download_dir, strains_downloaded_counter))
                for i in range(NUMBER_OF_PROCESSES)]
     for w in workers:
