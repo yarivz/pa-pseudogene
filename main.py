@@ -32,7 +32,10 @@ def main():
         if args.download:
             download_strain_files(STRAINS_DIR, sample_size=args.sample_size)
         if args.preprocess:
-            combined_proteins_file_path = create_all_strains_file_with_indices()
+            if os.listdir(STRAINS_DIR):
+                combined_proteins_file_path = create_all_strains_file_with_indices()
+            else:
+                logger.error("Cannot preprocess strain proteins without downloaded strains")
         if args.cluster:
             if combined_proteins_file_path is not None:
                 perform_clustering_on_strains(combined_proteins_file_path)
@@ -67,7 +70,7 @@ def perform_clustering_on_strains(aggregated_proteins_file_path):
     clustering_output_file = os.path.join(DATA_DIR, 'protein_clusters.txt')
     cd_hit_args = ["cd-hit", "-i", aggregated_proteins_file_path, "-o", clustering_output_file, "-c 0.70",
                    "-n 5", "-M 16000", "-g 1", "-p 1"]
-    cd_hit_return_code = call(cd_hit_args)
+    cd_hit_return_code = call(cd_hit_args, shell=True)
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_return_code)
 
 
