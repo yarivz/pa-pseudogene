@@ -70,7 +70,7 @@ def perform_clustering_on_strains(aggregated_proteins_file_path):
     clustering_output_file = os.path.join(DATA_DIR, 'protein_clusters.txt')
     cd_hit_args = " ".join(["cd-hit", "-i", aggregated_proteins_file_path, "-o", clustering_output_file, "-c 0.70",
                    "-n 5", "-M 16000", "-g 1", "-p 1"])
-    cd_hit_return_code = run(cd_hit_args, shell=True)
+    cd_hit_return_code = run(cd_hit_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_return_code)
 
 
