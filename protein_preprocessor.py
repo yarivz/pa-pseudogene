@@ -16,7 +16,7 @@ def create_all_strains_file_with_indices(log_queue):
     """
     Preprocess all strains proteins in parallel and combine all worker output files into single fasta file for clustering
     """
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.info("Indexing proteins by their strain index & protein index in strain gene")
     for file in os.listdir(DATA_DIR):
         if COMBINED_STRAIN_PROTEINS_PREFIX in file:

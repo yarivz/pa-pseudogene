@@ -88,7 +88,7 @@ def download_valid_strains(worker_id, job_queue, configurer, log_queue, download
 
 
 def download_strain_files(download_dir, log_queue, sample_size=None):
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     ftp_handle.login()
     job_queue = multiprocessing.Queue()
     get_strains_from_ftp(job_queue, sample_size)
@@ -108,7 +108,7 @@ def download_strain_files(download_dir, log_queue, sample_size=None):
 
 
 def get_strains_from_ftp(job_queue, sample_size):
-    logger = logging.getLogger()
+    logger = logging.getLogger(__name__)
     logger.info("Listing latest PA strains for download")
     ftp_handle.cwd(PA_LATEST_REFSEQ_URL)
     strains_dir_listing = ftp_handle.nlst()
