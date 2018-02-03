@@ -80,7 +80,7 @@ def download_valid_strains(worker_id, job_queue, configurer, download_dir, strai
                     logger.info("No feature_table or cds_from_genomic files found for strain %s" % strain_dir)
             else:
                 logger.info("No protein sequences found for strain %s" % strain_dir)
-        except error_temp:
+        except error_temp or TimeoutError:
             job_queue.put(strain_dir)
             sleep(2)
     ftp_con.quit()
