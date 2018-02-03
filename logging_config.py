@@ -4,7 +4,7 @@ from logging.handlers import QueueHandler
 
 def listener_configurer():
     root = logging.getLogger()
-    formatter = logging.Formatter('[%(levelname)s %(asctime)s %(module)s]  %(message)s')
+    formatter = logging.Formatter('[%(levelname)s %(asctime)s %(module)s] - %(message)s')
     file_handler = logging.FileHandler('pseudogene.log', 'w')
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)

@@ -70,8 +70,8 @@ def download_valid_strains(worker_id, job_queue, log_queue, configurer, download
                                                     'wb').write)
                         with strains_downloaded_counter.get_lock():
                             strain_index = strains_downloaded_counter.value
-                            indexed_strain_dir = download_dir + os.sep + '[' + str(strain_index) + ']' + strain_dir + os.sep
-                            os.rename(strain_download_dir, indexed_strain_dir)
+                            with open(os.path.join(strain_download_dir, 'strain_index'), 'w') as index_file:
+                                index_file.write(str(strain_index))
                             strains_downloaded_counter.value += 1
                         num_of_strains_downloaded += 1
 

@@ -69,9 +69,10 @@ def create_all_strains_file_with_indices():
             if not protein_file_name or not cds_file_name:
                 logger.warning("Could not find protein file or cds_from_genomic file for strain %s, skipping" % strain_dir)
                 continue
-            strain_index = strain_dir[:strain_dir.find(']') + 1]
-            protein_file = cds_file = aggregated_proteins_file = None
+            protein_file = cds_file = aggregated_proteins_file = strain_index_file = None
             try:
+                strain_index_file = open(os.path.join(root, strain_dir, 'strain_index'))
+                strain_index = '[' + strain_index_file.readline() + ']'
                 if protein_file_name.endswith('gz'):
                     protein_file = gzip.open(os.path.join(root, strain_dir, protein_file_name), 'rt')
                 else:
@@ -100,6 +101,8 @@ def create_all_strains_file_with_indices():
                     cds_file.close()
                 if aggregated_proteins_file is not None:
                     aggregated_proteins_file.close()
+                if strain_index_file is not None:
+                    strain_index_file.close()
     logger.info("Finished adding all strains protein sequences to combined file")
     return aggregated_proteins_file_path
 
@@ -111,7 +114,6 @@ def perform_clustering_on_strains(aggregated_proteins_file_path):
     clusterring_output_file = os.path.join(DATA_DIR, 'protein_clusters.txt')
     cd_hit_args = ['cd-hit', '-i', aggregated_proteins_file_path, '-o', clusterring_output_file, '-c 0.70',
                    '-n 5', '-M 16000', '-g 1', '-p 1']
-    os.popen(cd_hit_args)
 
 
 if __name__ == '__main__':
