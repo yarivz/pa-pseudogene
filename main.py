@@ -7,11 +7,8 @@ import os
 
 from multiprocessing import Queue
 from Bio import SeqIO
+from constants import STRAINS_DIR, DATA_DIR
 from ftp_handler import download_strain_files
-from logging_config import listener_process, listener_configurer, worker_configurer
-
-DATA_DIR = os.getcwd() + os.sep + "data"
-STRAINS_DIR = DATA_DIR + os.sep + "strains"
 
 
 def main():

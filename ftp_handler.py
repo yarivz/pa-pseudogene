@@ -33,10 +33,10 @@ def download_valid_strains(worker_id, job_queue, log_queue, configurer, download
             break
         try:
             strain_dir_files_list = ftp_con.nlst(strain_dir)
-            feature_table = [file for file in strain_dir_files_list if strain_dir + "_feature_table.txt" in file][0]
-            cds_from_genomic = [file for file in strain_dir_files_list if strain_dir + "_cds_from_genomic.fna" in file][0]
+            feature_table = [file for file in strain_dir_files_list if FEATURE_TABLE_PATTERN in file][0]
+            cds_from_genomic = [file for file in strain_dir_files_list if CDS_FROM_GENOMIC_PATTERN in file][0]
             genomic_sequences = [file for file in strain_dir_files_list if strain_dir + "_genomic.fna" in file][0]
-            protein_sequences = [file for file in strain_dir_files_list if strain_dir + "_protein.faa" in file][0]
+            protein_sequences = [file for file in strain_dir_files_list if PROTEIN_FILE_PATTERN in file][0]
             if protein_sequences:
                 if feature_table or cds_from_genomic:
                     status_file = [file for file in strain_dir_files_list if "assembly_status" in file]
@@ -70,7 +70,7 @@ def download_valid_strains(worker_id, job_queue, log_queue, configurer, download
                                                     'wb').write)
                         with strains_downloaded_counter.get_lock():
                             strain_index = strains_downloaded_counter.value
-                            with open(os.path.join(strain_download_dir, 'strain_index'), 'w') as index_file:
+                            with open(os.path.join(strain_download_dir, STRAIN_INDEX_FILE), 'w') as index_file:
                                 index_file.write(str(strain_index))
                             strains_downloaded_counter.value += 1
                         num_of_strains_downloaded += 1
