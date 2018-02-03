@@ -1,12 +1,10 @@
 import logging
-import multiprocessing
 from logging.handlers import QueueHandler
 
-log_queue = multiprocessing.Queue(-1)
 
 def listener_configurer():
     root = logging.getLogger()
-    formatter = logging.Formatter('[%(levelname)s %(asctime)s %(module)s] - %(message)s')
+    formatter = logging.Formatter('[%(levelname)s %(asctime)s %(name)s] - %(message)s')
     file_handler = logging.FileHandler('pseudogene.log', 'w')
     file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(formatter)
@@ -17,10 +15,9 @@ def listener_configurer():
 
 
 def worker_configurer(queue):
-    q_handler = QueueHandler(queue)  # Just the one handler needed
+    q_handler = QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(q_handler)
-    # send all messages, for demo; no other level or filter logic applied.
     root.setLevel(logging.DEBUG)
 
 
@@ -29,10 +26,10 @@ def listener_process(queue, configurer):
     while True:
         try:
             record = queue.get()
-            if record is None:  # We send this as a sentinel to tell the listener to quit.
+            if record is None:
                 break
             logger = logging.getLogger(record.name)
-            logger.handle(record)  # No level or filter logic applied - just do it!
+            logger.handle(record)
         except Exception:
             import sys, traceback
             print('Whoops! Problem:', file=sys.stderr)

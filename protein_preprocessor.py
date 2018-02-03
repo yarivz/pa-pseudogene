@@ -6,13 +6,13 @@ import shutil
 
 from Bio import SeqIO
 
-from logging_config import worker_configurer, log_queue
+from logging_config import worker_configurer
 from constants import DATA_DIR, STRAINS_DIR, NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, PROTEIN_FILE_PATTERN, \
     CDS_FROM_GENOMIC_PATTERN, STRAIN_INDEX_FILE, COMBINED_STRAIN_PROTEINS_PREFIX, WORKER_PROTEIN_FILE_PREFIX, \
     COMBINED_PROTEINS_FILE_PATH
 
 
-def create_all_strains_file_with_indices():
+def create_all_strains_file_with_indices(log_queue):
     """
     Preprocess all strains proteins in parallel and combine all worker output files into single fasta file for clustering
     """
@@ -23,7 +23,7 @@ def create_all_strains_file_with_indices():
             os.remove(os.path.join(DATA_DIR, file))
     job_queue = multiprocessing.Queue()
     prepare_preprocessing_jobs(job_queue)
-    workers = [multiprocessing.Process(target=preprocess_strain_proteins, args=(i, job_queue, worker_configurer))
+    workers = [multiprocessing.Process(target=preprocess_strain_proteins, args=(i, job_queue, worker_configurer, log_queue))
                for i in range(NUMBER_OF_PROCESSES)]
     for w in workers:
         w.start()
@@ -44,7 +44,7 @@ def prepare_preprocessing_jobs(job_queue):
         job_queue.put(strain_dir)
 
 
-def preprocess_strain_proteins(worker_id, job_queue, configurer):
+def preprocess_strain_proteins(worker_id, job_queue, configurer, log_queue):
     """
     Preprocess all proteins for downloaded strains by indexing according to strain index and protein index within
     strain genome, using the cds_from_genome file
