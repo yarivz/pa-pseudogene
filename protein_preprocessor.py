@@ -8,10 +8,8 @@ from Bio import SeqIO
 
 from logging_config import worker_configurer, log_queue
 from constants import DATA_DIR, STRAINS_DIR, NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, PROTEIN_FILE_PATTERN, \
-    CDS_FROM_GENOMIC_PATTERN, STRAIN_INDEX_FILE
-
-COMBINED_STRAIN_PROTEINS_PREFIX = "combined_strain_proteins"
-WORKER_PROTEIN_FILE_PREFIX = COMBINED_STRAIN_PROTEINS_PREFIX + "_worker_"
+    CDS_FROM_GENOMIC_PATTERN, STRAIN_INDEX_FILE, COMBINED_STRAIN_PROTEINS_PREFIX, WORKER_PROTEIN_FILE_PREFIX, \
+    COMBINED_PROTEINS_FILE_PATH
 
 
 def create_all_strains_file_with_indices():
@@ -20,7 +18,6 @@ def create_all_strains_file_with_indices():
     """
     logger = logging.getLogger()
     logger.info("Indexing proteins by their strain index & protein index in strain gene")
-    all_proteins_file_path = os.path.join(DATA_DIR, COMBINED_STRAIN_PROTEINS_PREFIX + "_all.fasta")
     for file in os.listdir(DATA_DIR):
         if COMBINED_STRAIN_PROTEINS_PREFIX in file:
             os.remove(os.path.join(DATA_DIR, file))
@@ -34,7 +31,7 @@ def create_all_strains_file_with_indices():
     for w in workers:
         w.join()
     worker_combined_protein_files = [f for f in os.listdir(DATA_DIR) if WORKER_PROTEIN_FILE_PREFIX in f]
-    with open(all_proteins_file_path, 'w') as dstd:
+    with open(COMBINED_PROTEINS_FILE_PATH, 'w') as dstd:
         for worker_file in worker_combined_protein_files:
             with open(os.path.join(DATA_DIR, worker_file), 'r') as srcd:
                 shutil.copyfileobj(srcd, dstd)
