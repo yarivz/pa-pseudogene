@@ -111,6 +111,7 @@ def get_strains_from_ftp(job_queue, sample_size):
     logger = logging.getLogger(__name__)
     logger.info("Listing latest PA strains for download")
     ftp_handle.cwd(PA_LATEST_REFSEQ_URL)
+    #TODO add timeout and retry for this operation
     strains_dir_listing = ftp_handle.nlst()
     ftp_handle.quit()
     if sample_size:

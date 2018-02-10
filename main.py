@@ -4,7 +4,9 @@ import sys
 import logging
 import os
 from subprocess import run
-from constants import STRAINS_DIR, DATA_DIR, COMBINED_PROTEINS_FILE_PATH
+from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
+    CD_HIT_CLUSTERS_OUTPUT_FILE
+from data_analysis import get_strains_stats
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -43,6 +45,15 @@ def main():
                 perform_clustering_on_strains(COMBINED_PROTEINS_FILE_PATH)
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
+        if args.stats:
+            if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
+                stats = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
+                for stat in stats:
+                    logger.info("Strain index: %d" % stat)
+                    logger.info(stats[stat])
+            else:
+                logger.error("Cannot perform analysis without clusters file")
+
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
@@ -54,12 +65,14 @@ def init_args_parser():
                                                  'in Pseudomonas Areguinosa strains')
     parser.add_argument('-d', '--download', action="store_true",
                         help='Download all valid PA strains from the refseq ftp for analysis')
-    parser.add_argument('-s', '--sample', type=int, dest='sample_size', default=None,
+    parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
     parser.add_argument('-p', '--preprocess', action="store_true",
                         help='Preprocess downloaded PA strains proteins')
     parser.add_argument('-c', '--cluster', action="store_true",
                         help='Run CD-HIT clustering on preprocessed PA strains proteins')
+    parser.add_argument('-s', '--stats', action="store_true",
+                        help='Get stats from CD-HIT clustering output')
     return parser
 
 
@@ -67,11 +80,11 @@ def perform_clustering_on_strains(aggregated_proteins_file_path):
     """Run the CD-HIT program to perform clustering on the strains"""
     logger = logging.getLogger()
     logger.info("Running CD-HIT on combined proteins file to create clustering")
-    clustering_output_file = os.path.join(DATA_DIR, 'protein_clusters.txt')
-    cd_hit_args = " ".join(["cd-hit", "-i", aggregated_proteins_file_path, "-o", clustering_output_file, "-c 0.70",
+    cd_hit_args = " ".join(["cd-hit", "-i", aggregated_proteins_file_path, "-o", CD_HIT_CLUSTER_REPS_OUTPUT_FILE, "-c 0.70",
                    "-n 5", "-M 16000", "-g 1", "-p 1"])
     cd_hit_return_code = run(cd_hit_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_return_code)
+    return cd_hit_return_code
 
 
 if __name__ == '__main__':
