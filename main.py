@@ -4,12 +4,17 @@ import sys
 import logging
 import os
 from subprocess import run
+
+from plotly.graph_objs import Scatter, Layout, Heatmap
+
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE
-from data_analysis import get_strains_stats
+from data_analysis import get_strains_stats, get_genomic_stats_per_strain, create_strains_clusters_map
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
+import plotly
+from plotly import graph_objs as go
 
 
 def main():
@@ -30,6 +35,7 @@ def main():
 
     try:
         combined_proteins_file_path = None
+        contigs = pseudogenes = total_clusters = core_clusters = singleton_clusters = None
         logger.info("Starting work")
         if args.download:
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
@@ -46,14 +52,51 @@ def main():
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.stats:
+            genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
+            for stat in genomic_stats:
+                logger.info("Strain index: %s" % stat)
+                logger.info(genomic_stats[stat])
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
-                stats = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
-                for stat in stats:
-                    logger.info("Strain index: %d" % stat)
-                    logger.info(stats[stat])
+                cluster_stats, total_clusters, core_clusters, singleton_clusters = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
+                for stat in cluster_stats:
+                    logger.info("Strain index: %s" % stat)
+                    logger.info(cluster_stats[stat])
             else:
                 logger.error("Cannot perform analysis without clusters file")
-
+        if args.graph:
+            strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+            heatmap_data = []
+            for strain in strains_map:
+                heatmap_data.append([cluster.index for cluster in strain.containing_clusters])
+            plotly.offline.plot({
+                "data": Heatmap(z=heatmap_data),
+                "layout": Layout(title="Strains to Clusters")
+            }, show_link=False, filename="clusters_by_strains_heatmap")
+            if total_clusters:
+                plotly.offline.plot({
+                    "data": go.Histogram(x=total_clusters),
+                    "layout": Layout(title="Clusters by strain appearances")
+                }, show_link=False, filename="clusters_by_strain_num_histogram")
+            if core_clusters:
+                plotly.offline.plot({
+                    "data": go.Histogram(x=core_clusters),
+                    "layout": Layout(title="Core Clusters by strain appearances")
+                }, show_link=False, filename="core_clusters_by_strain_num_histogram")
+            if singleton_clusters:
+                plotly.offline.plot({
+                    "data": go.Histogram(x=singleton_clusters),
+                    "layout": Layout(title="Singleton Clusters by strain appearances")
+                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram")
+            if contigs:
+                plotly.offline.plot({
+                    "data": go.Histogram(x=contigs),
+                    "layout": Layout(title="Contig count by strains")
+                }, show_link=False, filename="contigs_by_strain_num_histogram")
+            if pseudogenes:
+                plotly.offline.plot({
+                    "data": go.Histogram(x=pseudogenes),
+                    "layout": Layout(title="Pseudogene count by strains")
+                }, show_link=False, filename="pseudogenes_by_strain_num_histogram")
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
@@ -63,16 +106,13 @@ def main():
 def init_args_parser():
     parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
                                                  'in Pseudomonas Areguinosa strains')
-    parser.add_argument('-d', '--download', action="store_true",
-                        help='Download all valid PA strains from the refseq ftp for analysis')
+    parser.add_argument('-d', '--download', action="store_true", help='Download all valid PA strains from the refseq ftp for analysis')
     parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
-    parser.add_argument('-p', '--preprocess', action="store_true",
-                        help='Preprocess downloaded PA strains proteins')
-    parser.add_argument('-c', '--cluster', action="store_true",
-                        help='Run CD-HIT clustering on preprocessed PA strains proteins')
-    parser.add_argument('-s', '--stats', action="store_true",
-                        help='Get stats from CD-HIT clustering output')
+    parser.add_argument('-p', '--preprocess', action="store_true", help='Preprocess downloaded PA strains proteins')
+    parser.add_argument('-c', '--cluster', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
+    parser.add_argument('-s', '--stats', action="store_true", help='Get stats from CD-HIT clustering output')
+    parser.add_argument('-g', '--graph', action="store_true", help='Plot graphs from strain stats')
     return parser
 
 
