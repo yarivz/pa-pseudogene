@@ -6,6 +6,7 @@ NUMBER_OF_PROCESSES = os.cpu_count()
 FASTA_FILE_TYPE = "fasta"
 PROTEIN_FILE_PATTERN = "protein.faa"
 CDS_FROM_GENOMIC_PATTERN = "cds_from_genomic.fna"
+GENOMIC_PATTERN = "genomic.fna"
 STRAIN_INDEX_FILE = "strain_index"
 FEATURE_TABLE_PATTERN = "feature_table.txt"
 COMBINED_STRAIN_PROTEINS_PREFIX = "combined_strain_proteins"
