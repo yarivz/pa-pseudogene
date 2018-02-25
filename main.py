@@ -52,6 +52,7 @@ def main():
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.stats:
+            logger.info("Gathering statistics")
             genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
             for stat in genomic_stats:
                 logger.info("Strain index: %s" % stat)
@@ -64,10 +65,11 @@ def main():
             else:
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
+            logger.info("Plotting charts from statistics")
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             heatmap_data = []
             for strain in strains_map:
-                heatmap_data.append([cluster.index for cluster in strain.containing_clusters])
+                heatmap_data.append([cluster.index for cluster in strains_map[strain].containing_clusters])
             plotly.offline.plot({
                 "data": Heatmap(z=heatmap_data),
                 "layout": Layout(title="Strains to Clusters")
