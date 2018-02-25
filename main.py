@@ -68,37 +68,38 @@ def main():
             logger.info("Plotting charts from statistics")
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             heatmap_data = []
-            for strain in strains_map:
-                heatmap_data.append([cluster.index for cluster in strains_map[strain].containing_clusters])
+            for _, strain in strains_map:
+                heatmap_data.append(strain.containing_clusters.keys())
+            print(heatmap_data)
             plotly.offline.plot({
                 "data": Heatmap(z=heatmap_data),
                 "layout": Layout(title="Strains to Clusters")
-            }, show_link=False, filename="clusters_by_strains_heatmap")
+            }, show_link=False, filename="clusters_by_strains_heatmap.html", validate=False)
             if total_clusters:
                 plotly.offline.plot({
                     "data": go.Histogram(x=total_clusters),
                     "layout": Layout(title="Clusters by strain appearances")
-                }, show_link=False, filename="clusters_by_strain_num_histogram")
+                }, show_link=False, filename="clusters_by_strain_num_histogram.html")
             if core_clusters:
                 plotly.offline.plot({
                     "data": go.Histogram(x=core_clusters),
                     "layout": Layout(title="Core Clusters by strain appearances")
-                }, show_link=False, filename="core_clusters_by_strain_num_histogram")
+                }, show_link=False, filename="core_clusters_by_strain_num_histogram.html")
             if singleton_clusters:
                 plotly.offline.plot({
                     "data": go.Histogram(x=singleton_clusters),
                     "layout": Layout(title="Singleton Clusters by strain appearances")
-                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram")
+                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram.html")
             if contigs:
                 plotly.offline.plot({
                     "data": go.Histogram(x=contigs),
                     "layout": Layout(title="Contig count by strains")
-                }, show_link=False, filename="contigs_by_strain_num_histogram")
+                }, show_link=False, filename="contigs_by_strain_num_histogram.html")
             if pseudogenes:
                 plotly.offline.plot({
                     "data": go.Histogram(x=pseudogenes),
                     "layout": Layout(title="Pseudogene count by strains")
-                }, show_link=False, filename="pseudogenes_by_strain_num_histogram")
+                }, show_link=False, filename="pseudogenes_by_strain_num_histogram.html")
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
