@@ -79,27 +79,27 @@ def main():
                 plotly.offline.plot({
                     "data": go.Histogram(x=total_clusters),
                     "layout": Layout(title="Clusters by strain appearances")
-                }, show_link=False, filename="clusters_by_strain_num_histogram.html")
+                }, show_link=False, filename="clusters_by_strain_num_histogram.html", validate=False)
             if core_clusters:
                 plotly.offline.plot({
                     "data": go.Histogram(x=core_clusters),
                     "layout": Layout(title="Core Clusters by strain appearances")
-                }, show_link=False, filename="core_clusters_by_strain_num_histogram.html")
+                }, show_link=False, filename="core_clusters_by_strain_num_histogram.html", validate=False)
             if singleton_clusters:
                 plotly.offline.plot({
                     "data": go.Histogram(x=singleton_clusters),
                     "layout": Layout(title="Singleton Clusters by strain appearances")
-                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram.html")
+                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram.html", validate=False)
             if contigs:
                 plotly.offline.plot({
                     "data": go.Histogram(x=contigs),
                     "layout": Layout(title="Contig count by strains")
-                }, show_link=False, filename="contigs_by_strain_num_histogram.html")
+                }, show_link=False, filename="contigs_by_strain_num_histogram.html", validate=False)
             if pseudogenes:
                 plotly.offline.plot({
                     "data": go.Histogram(x=pseudogenes),
                     "layout": Layout(title="Pseudogene count by strains")
-                }, show_link=False, filename="pseudogenes_by_strain_num_histogram.html")
+                }, show_link=False, filename="pseudogenes_by_strain_num_histogram.html", validate=False)
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
