@@ -68,8 +68,8 @@ def main():
             logger.info("Plotting charts from statistics")
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             heatmap_data = []
-            for _, strain in strains_map:
-                heatmap_data.append(strain.containing_clusters.keys())
+            for _, strain in strains_map.items():
+                heatmap_data.append([k for k in strain.containing_clusters.keys()])
             print(heatmap_data)
             plotly.offline.plot({
                 "data": Heatmap(z=heatmap_data),
