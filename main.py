@@ -13,7 +13,6 @@ from data_analysis import get_strains_stats, get_genomic_stats_per_strain, creat
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
-import matplotlib.pyplot as plt
 import seaborn as sns
 
 
