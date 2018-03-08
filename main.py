@@ -5,7 +5,7 @@ import logging
 import os
 from subprocess import run
 
-from plotly.graph_objs import Scatter, Layout, Heatmap
+import pandas
 
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE
@@ -13,8 +13,8 @@ from data_analysis import get_strains_stats, get_genomic_stats_per_strain, creat
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
-import plotly
-from plotly import graph_objs as go
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 def main():
@@ -66,40 +66,22 @@ def main():
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
+            sns.set()
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-            heatmap_data = []
-            for _, strain in strains_map.items():
-                heatmap_data.append([k for k in strain.containing_clusters.keys()])
-            print(heatmap_data)
-            plotly.offline.plot({
-                "data": Heatmap(z=heatmap_data),
-                "layout": Layout(title="Strains to Clusters")
-            }, show_link=False, filename="clusters_by_strains_heatmap.html", validate=False)
+            heatmap_data = {}
+            for index, strain in strains_map.items():
+                heatmap_data[index] = [k for k in strain.containing_clusters.keys()]
+            sns.jointplot(pandas.DataFrame(data=heatmap_data))
             if total_clusters:
-                plotly.offline.plot({
-                    "data": go.Histogram(x=total_clusters),
-                    "layout": Layout(title="Clusters by strain appearances")
-                }, show_link=False, filename="clusters_by_strain_num_histogram.html", validate=False)
+                sns.distplot(total_clusters).get_figure().savefig('total_clusters_by_strain_index.png')
             if core_clusters:
-                plotly.offline.plot({
-                    "data": go.Histogram(x=core_clusters),
-                    "layout": Layout(title="Core Clusters by strain appearances")
-                }, show_link=False, filename="core_clusters_by_strain_num_histogram.html", validate=False)
+                sns.distplot(core_clusters).get_figure().savefig('core_clusters_by_strain_index.png')
             if singleton_clusters:
-                plotly.offline.plot({
-                    "data": go.Histogram(x=singleton_clusters),
-                    "layout": Layout(title="Singleton Clusters by strain appearances")
-                }, show_link=False, filename="singleton_clusters_by_strain_num_histogram.html", validate=False)
+                sns.distplot(singleton_clusters).get_figure().savefig('singleton_clusters_by_strain_index.png')
             if contigs:
-                plotly.offline.plot({
-                    "data": go.Histogram(x=contigs),
-                    "layout": Layout(title="Contig count by strains")
-                }, show_link=False, filename="contigs_by_strain_num_histogram.html", validate=False)
+                sns.distplot(contigs).get_figure().savefig('contigs_by_strain_index.png')
             if pseudogenes:
-                plotly.offline.plot({
-                    "data": go.Histogram(x=pseudogenes),
-                    "layout": Layout(title="Pseudogene count by strains")
-                }, show_link=False, filename="pseudogenes_by_strain_num_histogram.html", validate=False)
+                sns.distplot(pseudogenes).get_figure().savefig('pseudogenes_by_strain_index.png')
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
