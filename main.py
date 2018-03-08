@@ -71,7 +71,7 @@ def main():
             heatmap_data = {}
             for index, strain in strains_map.items():
                 heatmap_data[index] = [k for k in strain.containing_clusters.keys()]
-            sns.jointplot(pandas.DataFrame(data=heatmap_data))
+            sns.jointplot(pandas.DataFrame(data=heatmap_data)).get_figure().savefig('clusters_by_strain_scatterplot.png')
             if total_clusters:
                 sns.distplot(total_clusters).get_figure().savefig('total_clusters_by_strain_index.png')
             if core_clusters:
