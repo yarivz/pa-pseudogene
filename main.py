@@ -13,7 +13,7 @@ from data_analysis import get_strains_stats, get_genomic_stats_per_strain, creat
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
-import seaborn as sns
+import matplotlib.pyplot as plt
 
 
 def main():
@@ -65,22 +65,24 @@ def main():
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
-            sns.set()
+            plt.use('Agg')
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-            heatmap_data = {}
+            x_strains = y_clusters = []
             for index, strain in strains_map.items():
-                heatmap_data[index] = [k for k in strain.containing_clusters.keys()]
-            sns.jointplot(pandas.DataFrame(data=heatmap_data)).get_figure().savefig('clusters_by_strain_scatterplot.png')
+                for c in strain.containing_clusters.keys():
+                    x_strains.append(index)
+                    y_clusters.append(c)
+            plt.scatter(x_strains, y_clusters).savefig('clusters_by_strain_scatterplot.png')
             if total_clusters:
-                sns.distplot(total_clusters).get_figure().savefig('total_clusters_by_strain_index.png')
+                plt.hist(total_clusters).savefig('total_clusters_by_strain_index.png')
             if core_clusters:
-                sns.distplot(core_clusters).get_figure().savefig('core_clusters_by_strain_index.png')
+                plt.hist(core_clusters).savefig('core_clusters_by_strain_index.png')
             if singleton_clusters:
-                sns.distplot(singleton_clusters).get_figure().savefig('singleton_clusters_by_strain_index.png')
+                plt.hist(singleton_clusters).savefig('singleton_clusters_by_strain_index.png')
             if contigs:
-                sns.distplot(contigs).get_figure().savefig('contigs_by_strain_index.png')
+                plt.hist(contigs).savefig('contigs_by_strain_index.png')
             if pseudogenes:
-                sns.distplot(pseudogenes).get_figure().savefig('pseudogenes_by_strain_index.png')
+                plt.hist(pseudogenes).savefig('pseudogenes_by_strain_index.png')
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
