@@ -68,21 +68,33 @@ def main():
             logger.info("Plotting charts from statistics")
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             x_strains = y_clusters = []
+            logger.info("Plotting strains to clusters scatter chart")
             for index, strain in strains_map.items():
                 for c in strain.containing_clusters.keys():
                     x_strains.append(index)
                     y_clusters.append(c)
-            plt.scatter(x_strains, y_clusters).savefig('clusters_by_strain_scatterplot.png')
+            plt.scatter(x_strains, y_clusters)
+            plt.savefig('clusters_by_strain_scatterplot.png')
             if total_clusters:
-                plt.hist(total_clusters).savefig('total_clusters_by_strain_index.png')
+                logger.info("Plotting strains to clusters histogram")
+                plt.hist(total_clusters)
+                plt.savefig('total_clusters_by_strain_index.png')
             if core_clusters:
-                plt.hist(core_clusters).savefig('core_clusters_by_strain_index.png')
+                logger.info("Plotting strains to core clusters histogram")
+                plt.hist(core_clusters)
+                plt.savefig('core_clusters_by_strain_index.png')
             if singleton_clusters:
-                plt.hist(singleton_clusters).savefig('singleton_clusters_by_strain_index.png')
+                logger.info("Plotting strains to singleton clusters histogram")
+                plt.hist(singleton_clusters)
+                plt.savefig('singleton_clusters_by_strain_index.png')
             if contigs:
-                plt.hist(contigs).savefig('contigs_by_strain_index.png')
+                logger.info("Plotting strains to contigs histogram")
+                plt.hist(contigs)
+                plt.savefig('contigs_by_strain_index.png')
             if pseudogenes:
-                plt.hist(pseudogenes).savefig('pseudogenes_by_strain_index.png')
+                logger.info("Plotting strains to pseudogenes histogram")
+                plt.hist(pseudogenes)
+                plt.savefig('pseudogenes_by_strain_index.png')
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
