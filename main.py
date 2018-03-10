@@ -75,26 +75,32 @@ def main():
                     y_clusters.append(c)
             plt.scatter(x_strains, y_clusters)
             plt.savefig('clusters_by_strain_scatterplot.png')
+            plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
                 plt.hist(total_clusters)
                 plt.savefig('total_clusters_by_strain_index.png')
+                plt.close()
             if core_clusters:
                 logger.info("Plotting strains to core clusters histogram")
                 plt.hist(core_clusters)
                 plt.savefig('core_clusters_by_strain_index.png')
+                plt.close()
             if singleton_clusters:
                 logger.info("Plotting strains to singleton clusters histogram")
                 plt.hist(singleton_clusters)
                 plt.savefig('singleton_clusters_by_strain_index.png')
+                plt.close()
             if contigs:
                 logger.info("Plotting strains to contigs histogram")
                 plt.hist(contigs)
                 plt.savefig('contigs_by_strain_index.png')
+                plt.close()
             if pseudogenes:
                 logger.info("Plotting strains to pseudogenes histogram")
                 plt.hist(pseudogenes)
                 plt.savefig('pseudogenes_by_strain_index.png')
+                plt.close()
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
