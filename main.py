@@ -5,7 +5,6 @@ import logging
 import os
 from subprocess import run
 
-import pandas
 
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE
@@ -13,6 +12,8 @@ from data_analysis import get_strains_stats, get_genomic_stats_per_strain, creat
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
@@ -65,7 +66,6 @@ def main():
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
-            plt.use('Agg')
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             x_strains = y_clusters = []
             for index, strain in strains_map.items():
