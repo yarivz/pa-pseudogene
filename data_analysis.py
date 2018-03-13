@@ -76,7 +76,8 @@ def create_strains_clusters_map(clusters_file):
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
                 if line.endswith("*"):
-                    representatives[cluster_index] =
+                    strain_reps = representatives[strain_index] if strain_index in representatives.keys() else []
+                    strain_reps.append(match.group(2) + "[" + cluster_index + "]")
     total_strains_count = len(strains_map)
     return strains_map, total_strains_count
 
