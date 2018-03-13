@@ -66,6 +66,12 @@ def main():
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
+            plt.figure(figsize=(70, 70))
+            ax = plt.subplot()  # Defines ax variable by creating an empty plot
+
+            # Set the tick labels font
+            for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+                label.set_fontsize(1)
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             x_strains = []
             y_clusters = []
@@ -74,8 +80,6 @@ def main():
                 for c in strain.containing_clusters.keys():
                     x_strains.append(index)
                     y_clusters.append(c)
-            plt.figure(figsize=(70, 70))
-            plt.annotate(fontsize=1)
             plt.scatter(x_strains, y_clusters)
             plt.xlabel("strains (indices)")
             plt.ylabel("clusters (indices)")
@@ -84,8 +88,6 @@ def main():
             plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
-                plt.figure(figsize=(70, 70))
-                plt.annotate(fontsize=1)
                 plt.hist(total_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
@@ -95,20 +97,15 @@ def main():
                 plt.close()
             if core_clusters:
                 logger.info("Plotting strains to core clusters histogram")
-                plt.figure(figsize=(70, 70))
-                plt.annotate(fontsize=1)
                 plt.hist(core_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to core clusters histogram")
                 plt.xticks(range(4500, 5300, 50))
-                plt.annotate(fontsize=1)
                 plt.savefig('core_clusters_by_strain_index.pdf', format("pdf"))
                 plt.close()
             if singleton_clusters:
                 logger.info("Plotting strains to singleton clusters histogram")
-                plt.figure(figsize=(70, 70))
-                plt.annotate(fontsize=1)
                 plt.hist(singleton_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
@@ -118,8 +115,6 @@ def main():
                 plt.close()
             if contigs:
                 logger.info("Plotting strains to contigs histogram")
-                plt.figure(figsize=(70, 70))
-                plt.annotate(fontsize=1)
                 plt.hist(contigs, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
@@ -129,8 +124,6 @@ def main():
                 plt.close()
             if pseudogenes:
                 logger.info("Plotting strains to pseudogenes histogram")
-                plt.figure(figsize=(70, 70))
-                plt.annotate(fontsize=1)
                 plt.hist(pseudogenes, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
