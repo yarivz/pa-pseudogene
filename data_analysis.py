@@ -61,6 +61,7 @@ def get_cluster_stats_per_strain(strains_map, total_strains_count):
 
 def create_strains_clusters_map(clusters_file):
     strains_map = {}
+    representatives = {}
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
         for line in clusters_db:
@@ -74,6 +75,8 @@ def create_strains_clusters_map(clusters_file):
                 cur_strain = strains_map[strain_index] if strain_index in strains_map.keys() else Strain(strain_index)
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
+                if line.endswith("*"):
+                    representatives[cluster_index] =
     total_strains_count = len(strains_map)
     return strains_map, total_strains_count
 

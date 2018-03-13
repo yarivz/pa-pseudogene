@@ -15,7 +15,6 @@ from protein_preprocessor import create_all_strains_file_with_indices
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 def main():
@@ -53,21 +52,20 @@ def main():
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.stats:
-            # logger.info("Gathering statistics")
-            # genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
-            # for stat in genomic_stats:
-            #     logger.info("Strain index: %s" % stat)
-            #     logger.info(genomic_stats[stat])
+            logger.info("Gathering statistics")
+            genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
+            for stat in genomic_stats:
+                logger.info("Strain index: %s" % stat)
+                logger.info(genomic_stats[stat])
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
                 cluster_stats, total_clusters, core_clusters, singleton_clusters = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
-                # for stat in cluster_stats:
-                #     logger.info("Strain index: %s" % stat)
-                #     logger.info(cluster_stats[stat])
+                for stat in cluster_stats:
+                    logger.info("Strain index: %s" % stat)
+                    logger.info(cluster_stats[stat])
             else:
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
-            sns.set()
             strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             x_strains = []
             y_clusters = []
@@ -76,57 +74,69 @@ def main():
                 for c in strain.containing_clusters.keys():
                     x_strains.append(index)
                     y_clusters.append(c)
+            plt.figure(figsize=(70, 70))
+            plt.annotate(fontsize=1)
             plt.scatter(x_strains, y_clusters)
             plt.xlabel("strains (indices)")
             plt.ylabel("clusters (indices)")
-            plt.title("strains to clusters scatter plot")
-            plt.savefig('clusters_by_strain_scatterplot.png')
+            plt.title("strains to clusters heatmap")
+            plt.savefig('clusters_by_strain_scatterplot.pdf', format("pdf"))
             plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
-                sns.distplot(total_clusters).get_figure().savefig('total_clusters_by_strain_index.png')
-                # plt.hist(total_clusters, color='green')
-                # plt.ylabel("strains #")
-                # plt.xlabel("clusters #")
-                # plt.title("strains to clusters histogram")
-                # plt.xticks(range(4000, 7300, 100))
-                # plt.savefig('total_clusters_by_strain_index.png')
-                # plt.close()
+                plt.figure(figsize=(70, 70))
+                plt.annotate(fontsize=1)
+                plt.hist(total_clusters, color='green')
+                plt.ylabel("strains #")
+                plt.xlabel("clusters #")
+                plt.title("strains to clusters histogram")
+                plt.xticks(range(4000, 7300, 100))
+                plt.savefig('total_clusters_by_strain_index.pdf', format("pdf"))
+                plt.close()
             if core_clusters:
                 logger.info("Plotting strains to core clusters histogram")
+                plt.figure(figsize=(70, 70))
+                plt.annotate(fontsize=1)
                 plt.hist(core_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to core clusters histogram")
                 plt.xticks(range(4500, 5300, 50))
-                plt.savefig('core_clusters_by_strain_index.png')
+                plt.annotate(fontsize=1)
+                plt.savefig('core_clusters_by_strain_index.pdf', format("pdf"))
                 plt.close()
             if singleton_clusters:
                 logger.info("Plotting strains to singleton clusters histogram")
+                plt.figure(figsize=(70, 70))
+                plt.annotate(fontsize=1)
                 plt.hist(singleton_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to singleton clusters histogram")
                 plt.xticks(range(0, 50, 1), range(50, 250, 20))
-                plt.savefig('singleton_clusters_by_strain_index.png')
+                plt.savefig('singleton_clusters_by_strain_index.pdf', format("pdf"))
                 plt.close()
             if contigs:
                 logger.info("Plotting strains to contigs histogram")
+                plt.figure(figsize=(70, 70))
+                plt.annotate(fontsize=1)
                 plt.hist(contigs, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
                 plt.title("strains to contigs histogram")
                 plt.xticks(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100))
-                plt.savefig('contigs_by_strain_index.png')
+                plt.savefig('contigs_by_strain_index.pdf', format("pdf"))
                 plt.close()
             if pseudogenes:
                 logger.info("Plotting strains to pseudogenes histogram")
+                plt.figure(figsize=(70, 70))
+                plt.annotate(fontsize=1)
                 plt.hist(pseudogenes, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
                 plt.title("strains to pseudogenes histogram")
                 plt.xticks(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100))
-                plt.savefig('pseudogenes_by_strain_index.png')
+                plt.savefig('pseudogenes_by_strain_index.pdf', format("pdf"))
                 plt.close()
         logger.info("Finished work, exiting")
     finally:
