@@ -4,9 +4,10 @@ import sys
 import logging
 import os
 from subprocess import run
-
-import itertools
 import pickle
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, GENOMIC_STATS_PKL, PROTEIN_STATS_PKL, TOTAL_CLUSTERS_PKL, CORE_CLUSTERS_PKL, \
@@ -15,9 +16,7 @@ from data_analysis import get_strains_stats, get_genomic_stats_per_strain, creat
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+
 
 
 def main():
@@ -117,7 +116,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
-                plt.xticks(range(4000, 7300, 100))
+                plt.xticks(list(range(4000, 7300, 100)))
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
@@ -126,7 +125,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to core clusters histogram")
-                plt.xticks(range(4500, 5300, 50))
+                plt.xticks(list(range(4500, 5300, 50)))
                 plt.savefig('core_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if singleton_clusters:
@@ -135,7 +134,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to singleton clusters histogram")
-                plt.xticks(itertools.chain(range(0, 50, 1), range(50, 250, 20)))
+                plt.xticks(list(range(0, 50, 1)) + list(range(50, 250, 20)))
                 plt.savefig('singleton_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if contigs:
@@ -144,7 +143,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
                 plt.title("strains to contigs histogram")
-                plt.xticks(itertools.chain(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100)))
+                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('contigs_by_strain_index.pdf', format="pdf")
                 plt.close()
             if pseudogenes:
@@ -153,7 +152,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
                 plt.title("strains to pseudogenes histogram")
-                plt.xticks(itertools.chain(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100)))
+                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('pseudogenes_by_strain_index.pdf', format="pdf")
                 plt.close()
         logger.info("Finished work, exiting")
