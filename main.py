@@ -5,9 +5,12 @@ import logging
 import os
 from subprocess import run
 
+import itertools
+import pickle
 
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
-    CD_HIT_CLUSTERS_OUTPUT_FILE
+    CD_HIT_CLUSTERS_OUTPUT_FILE, GENOMIC_STATS_PKL, PROTEIN_STATS_PKL, TOTAL_CLUSTERS_PKL, CORE_CLUSTERS_PKL, \
+    SINGLETON_CLUSTERS_PKL, CONTIGS_PKL, PSEUDOGENES_PKL
 from data_analysis import get_strains_stats, get_genomic_stats_per_strain, create_strains_clusters_map
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
@@ -54,21 +57,43 @@ def main():
         if args.stats:
             logger.info("Gathering statistics")
             genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
-            for stat in genomic_stats:
-                logger.info("Strain index: %s" % stat)
-                logger.info(genomic_stats[stat])
+            with open(GENOMIC_STATS_PKL, 'wb') as f:
+                pickle.dump(genomic_stats, f)
+            with open(CONTIGS_PKL, 'wb') as f:
+                pickle.dump(contigs, f)
+            with open(PSEUDOGENES_PKL, 'wb') as f:
+                pickle.dump(pseudogenes, f)
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
                 cluster_stats, total_clusters, core_clusters, singleton_clusters = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
-                for stat in cluster_stats:
-                    logger.info("Strain index: %s" % stat)
-                    logger.info(cluster_stats[stat])
+                with open(PROTEIN_STATS_PKL, 'wb') as f:
+                    pickle.dump(cluster_stats, f)
+                with open(TOTAL_CLUSTERS_PKL, 'wb') as f:
+                    pickle.dump(total_clusters, f)
+                with open(CORE_CLUSTERS_PKL, 'wb') as f:
+                    pickle.dump(core_clusters, f)
+                with open(SINGLETON_CLUSTERS_PKL, 'wb') as f:
+                    pickle.dump(singleton_clusters, f)
             else:
                 logger.error("Cannot perform analysis without clusters file")
         if args.graph:
             logger.info("Plotting charts from statistics")
-            plt.figure(figsize=(70, 70))
+            if not total_clusters:
+                with open(TOTAL_CLUSTERS_PKL, 'rb') as f:
+                    total_clusters = pickle.load(f)
+            if not core_clusters:
+                with open(CORE_CLUSTERS_PKL, 'rb') as f:
+                    core_clusters = pickle.load(f)
+            if not singleton_clusters:
+                with open(SINGLETON_CLUSTERS_PKL, 'rb') as f:
+                    singleton_clusters = pickle.load(f)
+            if not contigs:
+                with open(CONTIGS_PKL, 'rb') as f:
+                    contigs = pickle.load(f)
+            if not pseudogenes:
+                with open(PSEUDOGENES_PKL, 'rb') as f:
+                    pseudogenes = pickle.load(f)
+            # plt.figure(figsize=(70, 70))
             ax = plt.subplot()  # Defines ax variable by creating an empty plot
-
             # Set the tick labels font
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
                 label.set_fontsize(1)
@@ -110,7 +135,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to singleton clusters histogram")
-                plt.xticks(range(0, 50, 1), range(50, 250, 20))
+                plt.xticks(itertools.chain(range(0, 50, 1), range(50, 250, 20)))
                 plt.savefig('singleton_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if contigs:
@@ -119,7 +144,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
                 plt.title("strains to contigs histogram")
-                plt.xticks(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100))
+                plt.xticks(itertools.chain(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100)))
                 plt.savefig('contigs_by_strain_index.pdf', format="pdf")
                 plt.close()
             if pseudogenes:
@@ -128,7 +153,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
                 plt.title("strains to pseudogenes histogram")
-                plt.xticks(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100))
+                plt.xticks(itertools.chain(range(0, 10, 1), range(20, 250, 10), range(250, 2000, 100)))
                 plt.savefig('pseudogenes_by_strain_index.pdf', format="pdf")
                 plt.close()
         logger.info("Finished work, exiting")
