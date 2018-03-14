@@ -99,7 +99,7 @@ def main():
             # plt.figure(figsize=(70, 70))
             ax = plt.subplot()
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-                label.set_fontsize(1)
+                label.set_fontsize(10)
             # strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             # x_strains = []
             # y_clusters = []
@@ -116,7 +116,7 @@ def main():
             # plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
-                plt.hist(total_clusters, color='green', bins=list(range(4000, 7300, 100)))
+                plt.hist(total_clusters, color='green', bins=list(range(4000, 7300, 100)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
