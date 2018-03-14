@@ -77,46 +77,51 @@ def main():
         if args.graph:
             logger.info("Plotting charts from statistics")
             if not total_clusters:
+                logger.info("retrieving total_clusters from pkl file")
                 with open(TOTAL_CLUSTERS_PKL, 'rb') as f:
                     total_clusters = pickle.load(f)
             if not core_clusters:
+                logger.info("retrieving core_clusters from pkl file")
                 with open(CORE_CLUSTERS_PKL, 'rb') as f:
                     core_clusters = pickle.load(f)
             if not singleton_clusters:
+                logger.info("retrieving singleton_clusters from pkl file")
                 with open(SINGLETON_CLUSTERS_PKL, 'rb') as f:
                     singleton_clusters = pickle.load(f)
             if not contigs:
+                logger.info("retrieving contigs from pkl file")
                 with open(CONTIGS_PKL, 'rb') as f:
                     contigs = pickle.load(f)
             if not pseudogenes:
+                logger.info("retrieving pseudogenes from pkl file")
                 with open(PSEUDOGENES_PKL, 'rb') as f:
                     pseudogenes = pickle.load(f)
-            # plt.figure(figsize=(70, 70))
+            plt.figure(figsize=(70, 70))
             ax = plt.subplot()  # Defines ax variable by creating an empty plot
             # Set the tick labels font
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
                 label.set_fontsize(1)
-            strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-            x_strains = []
-            y_clusters = []
-            logger.info("Plotting strains to clusters scatter chart")
-            for index, strain in strains_map.items():
-                for c in strain.containing_clusters.keys():
-                    x_strains.append(index)
-                    y_clusters.append(c)
-            plt.scatter(x_strains, y_clusters)
-            plt.xlabel("strains (indices)")
-            plt.ylabel("clusters (indices)")
-            plt.title("strains to clusters heatmap")
-            plt.savefig('clusters_by_strain_scatterplot.pdf', format="pdf")
-            plt.close()
+            # strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+            # x_strains = []
+            # y_clusters = []
+            # logger.info("Plotting strains to clusters scatter chart")
+            # for index, strain in strains_map.items():
+            #     for c in strain.containing_clusters.keys():
+            #         x_strains.append(index)
+            #         y_clusters.append(c)
+            # plt.scatter(x_strains, y_clusters)
+            # plt.xlabel("strains (indices)")
+            # plt.ylabel("clusters (indices)")
+            # plt.title("strains to clusters heatmap")
+            # plt.savefig('clusters_by_strain_scatterplot.pdf', format="pdf")
+            # plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
                 plt.hist(total_clusters, color='green')
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
-                plt.xticks(list(range(4000, 7300, 100)))
+                # plt.xticks(list(range(4000, 7300, 100)))
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
@@ -125,7 +130,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to core clusters histogram")
-                plt.xticks(list(range(4500, 5300, 50)))
+                # plt.xticks(list(range(4500, 5300, 50)))
                 plt.savefig('core_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if singleton_clusters:
@@ -134,7 +139,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to singleton clusters histogram")
-                plt.xticks(list(range(0, 50, 1)) + list(range(50, 250, 20)))
+                # plt.xticks(list(range(0, 50, 1)) + list(range(50, 250, 20)))
                 plt.savefig('singleton_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if contigs:
@@ -143,7 +148,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
                 plt.title("strains to contigs histogram")
-                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
+                # plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('contigs_by_strain_index.pdf', format="pdf")
                 plt.close()
             if pseudogenes:
@@ -152,7 +157,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
                 plt.title("strains to pseudogenes histogram")
-                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
+                # plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('pseudogenes_by_strain_index.pdf', format="pdf")
                 plt.close()
         logger.info("Finished work, exiting")

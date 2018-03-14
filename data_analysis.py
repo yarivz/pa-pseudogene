@@ -61,7 +61,6 @@ def get_cluster_stats_per_strain(strains_map, total_strains_count):
 
 def create_strains_clusters_map(clusters_file):
     strains_map = {}
-    representatives = {}
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
         for line in clusters_db:
@@ -75,11 +74,23 @@ def create_strains_clusters_map(clusters_file):
                 cur_strain = strains_map[strain_index] if strain_index in strains_map.keys() else Strain(strain_index)
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
-                if line.endswith("*"):
-                    strain_reps = representatives[strain_index] if strain_index in representatives.keys() else []
-                    strain_reps.append(match.group(2) + "[" + cluster_index + "]")
     total_strains_count = len(strains_map)
     return strains_map, total_strains_count
+
+
+def get_clusters_representatives(clusters_file):
+    representatives = {}
+    with open(clusters_file, 'r') as clusters_db:
+        for line in clusters_db:
+            if line.startswith(">Cluster"):
+                cluster_index = int(line.split()[-1])
+            else:
+                if line.endswith("*"):
+                    match = CLUSTER_STRAIN_PATTERN.match(line)
+                    strain_index = int(match.group(1))
+                    strain_reps = representatives[strain_index] if strain_index in representatives.keys() else []
+                    strain_reps.append(match.group(2) + "[" + cluster_index + "]")
+    return representatives
 
 
 def get_strain_contigs(strain_genomic_file):
