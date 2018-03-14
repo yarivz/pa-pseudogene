@@ -121,7 +121,7 @@ def main():
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
                 plt.xticks(list(range(4000, 7300, 100)))
-                plt.yticks(list(range(1, 10, 1)) + list(range(10, 500, 10)))
+                plt.yticks(list(range(1, 10, 1)) + list(range(10, 100, 10)) + list(range(100, 500, 50)))
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
