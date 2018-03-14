@@ -99,7 +99,7 @@ def main():
             # plt.figure(figsize=(70, 70))
             ax = plt.subplot()
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-                label.set_fontsize(10)
+                label.set_fontsize(3)
             # strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             # x_strains = []
             # y_clusters = []
