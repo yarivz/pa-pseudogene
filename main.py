@@ -96,7 +96,7 @@ def main():
                 logger.info("retrieving pseudogenes from pkl file")
                 with open(PSEUDOGENES_PKL, 'rb') as f:
                     pseudogenes = pickle.load(f)
-            plt.figure(figsize=(70, 70))
+            # plt.figure(figsize=(70, 70))
             ax = plt.subplot()
             for label in (ax.get_xticklabels() + ax.get_yticklabels()):
                 label.set_fontsize(1)
@@ -120,7 +120,7 @@ def main():
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
-                # plt.xticks(list(range(4000, 7300, 100)))
+                plt.xticks(list(range(4000, 7300, 100)))
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
