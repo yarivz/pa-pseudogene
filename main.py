@@ -116,13 +116,13 @@ def main():
             # plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
-                plt.hist(total_clusters, color='green', bins=list(range(4000, 7300, 100)), align='left', rwidth=0.5)
+                plt.hist(total_clusters, color='green', bins=list(range(4800, 6900, 100)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
                 plt.xticks(list(range(4000, 7300, 100)))
-                plt.yticks(list(range(1, 500, 10)))
-                plt.grid(True, which='both')
+                plt.yticks(list(range(0, 500, 10)))
+                plt.grid(True, which='major')
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
