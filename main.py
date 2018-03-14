@@ -96,10 +96,6 @@ def main():
                 logger.info("retrieving pseudogenes from pkl file")
                 with open(PSEUDOGENES_PKL, 'rb') as f:
                     pseudogenes = pickle.load(f)
-            # plt.figure(figsize=(70, 70))
-            ax = plt.subplot()
-            for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-                label.set_fontsize(3)
             # strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
             # x_strains = []
             # y_clusters = []
@@ -116,49 +112,54 @@ def main():
             # plt.close()
             if total_clusters:
                 logger.info("Plotting strains to clusters histogram")
+                set_labels_font_size()
                 plt.hist(total_clusters, color='green', bins=list(range(4800, 6900, 100)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to clusters histogram")
                 plt.xticks(list(range(4800, 6900, 100)))
                 plt.yticks(list(range(0, 500, 10)))
-                plt.grid(True, axis='y', linestyle='dashed')
+                # plt.grid(True, axis='y', linestyle='dashed')
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
                 logger.info("Plotting strains to core clusters histogram")
-                plt.hist(core_clusters, color='green')
+                set_labels_font_size()
+                plt.hist(core_clusters, color='green', bins=list(range(4500, 5300, 50)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to core clusters histogram")
-                # plt.xticks(list(range(4500, 5300, 50)))
+                plt.xticks(list(range(4500, 5300, 50)))
                 plt.savefig('core_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if singleton_clusters:
                 logger.info("Plotting strains to singleton clusters histogram")
-                plt.hist(singleton_clusters, color='green')
+                set_labels_font_size()
+                plt.hist(singleton_clusters, color='green', bins=list(range(0, 100, 5)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("clusters #")
                 plt.title("strains to singleton clusters histogram")
-                # plt.xticks(list(range(0, 50, 1)) + list(range(50, 250, 20)))
+                plt.xticks(list(range(0, 100, 1)))
                 plt.savefig('singleton_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if contigs:
                 logger.info("Plotting strains to contigs histogram")
-                plt.hist(contigs, color='green')
+                set_labels_font_size()
+                plt.hist(contigs, color='green', bins=list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("contigs #")
                 plt.title("strains to contigs histogram")
-                # plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
+                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('contigs_by_strain_index.pdf', format="pdf")
                 plt.close()
             if pseudogenes:
                 logger.info("Plotting strains to pseudogenes histogram")
-                plt.hist(pseudogenes, color='green')
+                set_labels_font_size()
+                plt.hist(pseudogenes, color='green', bins=list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)), align='left', rwidth=0.5)
                 plt.ylabel("strains #")
                 plt.xlabel("pseudogenes #")
                 plt.title("strains to pseudogenes histogram")
-                # plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
+                plt.xticks(list(range(0, 10, 1)) + list(range(20, 250, 10)) + list(range(250, 2000, 100)))
                 plt.savefig('pseudogenes_by_strain_index.pdf', format="pdf")
                 plt.close()
         logger.info("Finished work, exiting")
@@ -166,6 +167,11 @@ def main():
         log_queue.put_nowait(None)
         listener.join()
 
+
+def set_labels_font_size():
+    ax = plt.subplot()
+    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
+        label.set_fontsize(3)
 
 def init_args_parser():
     parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
