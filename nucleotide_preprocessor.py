@@ -33,7 +33,6 @@ def create_representatives_and_pseudogenes_file(log_queue):
     logger = logging.getLogger(__name__)
     logger.info("Preprocessing cds sequences for cluster representative proteins and pseudogenes")
     representatives = get_clusters_representatives(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    logger.info("representatives: %s" % representatives)
     for file in os.listdir(DATA_DIR):
         if COMBINED_STRAIN_CDS_PREFIX in file:
             os.remove(os.path.join(DATA_DIR, file))
@@ -56,16 +55,13 @@ def create_representatives_and_pseudogenes_file(log_queue):
 def get_clusters_representatives(clusters_file):
     representatives = {}
     with open(clusters_file, 'r') as clusters_db:
-        print("getting reps")
         for line in clusters_db:
             if line.startswith(">Cluster"):
                 cluster_index = int(line.split()[-1])
-                print("got cluster " + str(cluster_index))
             else:
                 if "*" in line:
                     match = CLUSTER_STRAIN_PATTERN.match(line)
                     strain_index = int(match.group(1))
-                    print("adding rep " + match.group(0))
                     strain_reps = representatives[strain_index] if strain_index in representatives.keys() else []
                     strain_reps.append(Representative(int(match.group(2)), cluster_index))
                     representatives[strain_index] = strain_reps
