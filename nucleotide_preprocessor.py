@@ -33,6 +33,7 @@ def create_representatives_and_pseudogenes_file(log_queue):
     logger = logging.getLogger(__name__)
     logger.info("Preprocessing cds sequences for cluster representative proteins and pseudogenes")
     representatives = get_clusters_representatives(CD_HIT_CLUSTERS_OUTPUT_FILE)
+    logger.info("representatives: %s" % representatives)
     for file in os.listdir(DATA_DIR):
         if COMBINED_STRAIN_CDS_PREFIX in file:
             os.remove(os.path.join(DATA_DIR, file))
@@ -118,7 +119,6 @@ def preprocess_strain_cds(worker_id, job_queue, configurer, log_queue):
                     SeqIO.write(strain_cds_seq, worker_combined_cds_file, FASTA_FILE_TYPE)
             logger.info(
                 "Strain %s reps and pseudogenes were indexed and written to file" % strain_dir[strain_dir.rfind(']') + 1:])
-            logger.info("representatives: %s" % str(strain_data.representatives))
         finally:
             if cds_file is not None:
                 cds_file.close()
