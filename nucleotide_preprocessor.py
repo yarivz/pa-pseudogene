@@ -31,7 +31,7 @@ def create_representatives_and_pseudogenes_file(log_queue):
     files into single fasta file for clustering
     """
     logger = logging.getLogger(__name__)
-    logger.info("Indexing proteins by their strain index & protein index in strain gene")
+    logger.info("Preprocessing cds sequences for cluster representative proteins and pseudogenes")
     representatives = get_clusters_representatives(CD_HIT_CLUSTERS_OUTPUT_FILE)
     for file in os.listdir(DATA_DIR):
         if COMBINED_STRAIN_CDS_PREFIX in file:
@@ -113,13 +113,13 @@ def preprocess_strain_cds(worker_id, job_queue, configurer, log_queue):
                 rep = [r for r in strain_data.representatives if seq_position_in_genome == r.position]
                 pseudo = "pseudo=true" in strain_cds_seq.description
                 if rep or pseudo:
-                    strain_cds_seq.description = "[" + strain_index + "]" + "[" + seq_position_in_genome + "]"\
-                                                 + "{clustr}".format(clustr="[cluster_" + str(rep[0].cluster_index) + "]" if rep else "[pseudo]")\
+                    strain_cds_seq.description = "[" + str(strain_index) + "]" + "[" + str(seq_position_in_genome) + "]"\
+                                                 + "{info}".format(info="[cluster_" + str(rep[0].cluster_index) + "]" if rep else "[pseudo]")\
                                                  + strain_cds_seq.description
                     worker_combined_cds_file = open(worker_combined_cds_file_path, 'a+')
                     SeqIO.write(strain_cds_seq, worker_combined_cds_file, FASTA_FILE_TYPE)
             logger.info(
-                "Strain %s proteins were indexed and written to file" % strain_dir[strain_dir.rfind(']') + 1:])
+                "Strain %s reps and pseudogenes were indexed and written to file" % strain_dir[strain_dir.rfind(']') + 1:])
         finally:
             if cds_file is not None:
                 cds_file.close()
