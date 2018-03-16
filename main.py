@@ -6,6 +6,9 @@ import os
 from subprocess import run
 import pickle
 import matplotlib
+
+from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -41,11 +44,14 @@ def main():
         logger.info("Starting work")
         if args.download:
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
-        if args.preprocess:
+        if args.preprocess_proteins:
             if os.listdir(STRAINS_DIR):
                 combined_proteins_file_path = create_all_strains_file_with_indices(log_queue)
             else:
                 logger.error("Cannot preprocess strain proteins without downloaded strains")
+        if args.preprocess_cds_and_reps:
+            if os.listdir(STRAINS_DIR) and os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
+                create_representatives_and_pseudogenes_file(log_queue)
         if args.cluster:
             if combined_proteins_file_path is not None:
                 perform_clustering_on_strains(combined_proteins_file_path)
@@ -119,7 +125,6 @@ def main():
                 plt.title("strains to clusters histogram")
                 plt.xticks(list(range(4800, 6900, 100)))
                 plt.yticks(list(range(0, 500, 10)))
-                # plt.grid(True, axis='y', linestyle='dashed')
                 plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
                 plt.close()
             if core_clusters:
@@ -175,16 +180,19 @@ def set_labels_font_size():
     for label in (ax.get_xticklabels() + ax.get_yticklabels()):
         label.set_fontsize(3)
 
+
 def init_args_parser():
     parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
                                                  'in Pseudomonas Areguinosa strains')
     parser.add_argument('-d', '--download', action="store_true", help='Download all valid PA strains from the refseq ftp for analysis')
     parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
-    parser.add_argument('-p', '--preprocess', action="store_true", help='Preprocess downloaded PA strains proteins')
+    parser.add_argument('-p', '--preprocess_proteins', action="store_true", help='Preprocess downloaded PA strains proteins')
     parser.add_argument('-c', '--cluster', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
     parser.add_argument('-s', '--stats', action="store_true", help='Get stats from CD-HIT clustering output')
     parser.add_argument('-g', '--graph', action="store_true", help='Plot graphs from strain stats')
+    parser.add_argument('-r', '--preprocess_cds_and_reps', action="store_true",
+                        help='Preprocess clustered PA strains proteins rep cds and pseudogene cds')
     return parser
 
 
