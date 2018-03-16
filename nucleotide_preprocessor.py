@@ -101,19 +101,17 @@ def preprocess_strain_cds(worker_id, job_queue, configurer, log_queue):
         cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
         cds_file = worker_combined_cds_file = None
         try:
-            strain_index = '[' + strain_data.index + ']'
             if cds_file_name.endswith('gz'):
                 cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
             else:
                 cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
-
             strain_cds_seq_iter = SeqIO.parse(cds_file, FASTA_FILE_TYPE)
             for strain_cds_seq in strain_cds_seq_iter:
                 seq_position_in_genome = int(strain_cds_seq.id[strain_cds_seq.id.rfind("_") + 1:])
                 rep = [r for r in strain_data.representatives if seq_position_in_genome == r.position]
                 pseudo = "pseudo=true" in strain_cds_seq.description
                 if rep or pseudo:
-                    strain_cds_seq.description = "[" + str(strain_index) + "]" + "[" + str(seq_position_in_genome) + "]"\
+                    strain_cds_seq.description = "[" + str(strain_data.index) + "]" + "[" + str(seq_position_in_genome) + "]"\
                                                  + "{info}".format(info="[cluster_" + str(rep[0].cluster_index) + "]" if rep else "[pseudo]")\
                                                  + strain_cds_seq.description
                     worker_combined_cds_file = open(worker_combined_cds_file_path, 'a+')
