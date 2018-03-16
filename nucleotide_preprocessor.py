@@ -62,7 +62,7 @@ def get_clusters_representatives(clusters_file):
                 cluster_index = int(line.split()[-1])
                 print("got cluster " + str(cluster_index))
             else:
-                if line.endswith(r"*"):
+                if "*" in line:
                     match = CLUSTER_STRAIN_PATTERN.match(line)
                     strain_index = int(match.group(1))
                     print("adding rep " + match.group(0))
