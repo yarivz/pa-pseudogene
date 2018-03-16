@@ -73,7 +73,8 @@ def prepare_preprocessing_jobs(job_queue, representatives):
     downloaded_strains = os.listdir(STRAINS_DIR)
     for strain_dir in downloaded_strains:
         strain_index = get_strain_index(strain_dir)
-        strain_data = StrainData(strain_index, representatives[strain_index], strain_dir)
+        strain_reps = representatives[strain_index] if strain_index in representatives.keys() else []
+        strain_data = StrainData(strain_index, strain_reps, strain_dir)
         job_queue.put(strain_data)
 
 
