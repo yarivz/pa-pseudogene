@@ -118,6 +118,7 @@ def preprocess_strain_cds(worker_id, job_queue, configurer, log_queue):
                     SeqIO.write(strain_cds_seq, worker_combined_cds_file, FASTA_FILE_TYPE)
             logger.info(
                 "Strain %s reps and pseudogenes were indexed and written to file" % strain_dir[strain_dir.rfind(']') + 1:])
+            logger.info("representatives: %s" % str(strain_data.representatives))
         finally:
             if cds_file is not None:
                 cds_file.close()
