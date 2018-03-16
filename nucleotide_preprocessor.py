@@ -111,6 +111,7 @@ def preprocess_strain_cds(worker_id, job_queue, configurer, log_queue):
                 rep = [r for r in strain_data.representatives if seq_position_in_genome == r.position]
                 pseudo = "pseudo=true" in strain_cds_seq.description
                 if rep or pseudo:
+                    strain_cds_seq.id = ""
                     strain_cds_seq.description = "[" + str(strain_data.index) + "]" + "[" + str(seq_position_in_genome) + "]"\
                                                  + "{info}".format(info="[cluster_" + str(rep[0].cluster_index) + "]" if rep else "[pseudo]")\
                                                  + strain_cds_seq.description
