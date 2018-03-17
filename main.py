@@ -60,7 +60,7 @@ def main():
             if os.path.exists(COMBINED_CDS_FILE_PATH):
                 perform_clustering_on_cds(COMBINED_CDS_FILE_PATH)
             else:
-                logger.error("Cannot run clustering without pre-processed proteins file")
+                logger.error("Cannot run clustering without pre-processed cds file")
         if args.stats:
             logger.info("Gathering statistics")
             genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
@@ -215,8 +215,8 @@ def perform_clustering_on_cds(aggregated_cds_file_path):
     """Run the CD-HIT-EST program to perform clustering on the strains representatives and pseudogenes"""
     logger = logging.getLogger()
     logger.info("Running CD-HIT-EST on combined representative and pseudogene cds file to create clustering")
-    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, "-c 0.75",
-                   "-n 4", "-M 16000", "-g 1", "-p 1"])
+    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, "-c 0.8",
+                   "-n 5", "-M 16000", "-g 1", "-p 1"])
     cd_hit_est_return_code = run(cd_hit_est_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_est_return_code)
     return cd_hit_est_return_code
