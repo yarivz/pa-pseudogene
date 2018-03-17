@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, GENOMIC_STATS_PKL, PROTEIN_STATS_PKL, TOTAL_CLUSTERS_PKL, CORE_CLUSTERS_PKL, \
-    SINGLETON_CLUSTERS_PKL, CONTIGS_PKL, PSEUDOGENES_PKL
+    SINGLETON_CLUSTERS_PKL, CONTIGS_PKL, PSEUDOGENES_PKL, CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH
 from data_analysis import get_strains_stats, get_genomic_stats_per_strain, create_strains_clusters_map
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
@@ -39,24 +39,26 @@ def main():
         os.makedirs(STRAINS_DIR)
 
     try:
-        combined_proteins_file_path = None
         contigs = pseudogenes = total_clusters = core_clusters = singleton_clusters = None
         logger.info("Starting work")
         if args.download:
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
         if args.preprocess_proteins:
             if os.listdir(STRAINS_DIR):
-                combined_proteins_file_path = create_all_strains_file_with_indices(log_queue)
+                create_all_strains_file_with_indices(log_queue)
             else:
                 logger.error("Cannot preprocess strain proteins without downloaded strains")
-        if args.preprocess_cds_and_reps:
+        if args.preprocess_cds:
             if os.listdir(STRAINS_DIR) and os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
                 create_representatives_and_pseudogenes_file(log_queue)
-        if args.cluster:
-            if combined_proteins_file_path is not None:
-                perform_clustering_on_strains(combined_proteins_file_path)
-            elif os.path.exists(COMBINED_PROTEINS_FILE_PATH):
-                perform_clustering_on_strains(COMBINED_PROTEINS_FILE_PATH)
+        if args.cluster_proteins:
+            if os.path.exists(COMBINED_PROTEINS_FILE_PATH):
+                perform_clustering_on_proteins(COMBINED_PROTEINS_FILE_PATH)
+            else:
+                logger.error("Cannot run clustering without pre-processed proteins file")
+        if args.cluster_cds:
+            if os.path.exists(COMBINED_CDS_FILE_PATH):
+                perform_clustering_on_cds(COMBINED_CDS_FILE_PATH)
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.stats:
@@ -188,15 +190,17 @@ def init_args_parser():
     parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
     parser.add_argument('-p', '--preprocess_proteins', action="store_true", help='Preprocess downloaded PA strains proteins')
-    parser.add_argument('-c', '--cluster', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
+    parser.add_argument('-c', '--cluster_proteins', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
     parser.add_argument('-s', '--stats', action="store_true", help='Get stats from CD-HIT clustering output')
     parser.add_argument('-g', '--graph', action="store_true", help='Plot graphs from strain stats')
-    parser.add_argument('-r', '--preprocess_cds_and_reps', action="store_true",
-                        help='Preprocess clustered PA strains proteins rep cds and pseudogene cds')
+    parser.add_argument('-r', '--preprocess_cds', action="store_true",
+                        help='Preprocess clustered PA strains proteins representative and pseudogene cds')
+    parser.add_argument('-x', '--cluster_cds', action="store_true",
+                        help='Run CD-HIT clustering on preprocessed PA strains cds of representatives and pseudogenes')
     return parser
 
 
-def perform_clustering_on_strains(aggregated_proteins_file_path):
+def perform_clustering_on_proteins(aggregated_proteins_file_path):
     """Run the CD-HIT program to perform clustering on the strains"""
     logger = logging.getLogger()
     logger.info("Running CD-HIT on combined proteins file to create clustering")
@@ -205,6 +209,17 @@ def perform_clustering_on_strains(aggregated_proteins_file_path):
     cd_hit_return_code = run(cd_hit_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_return_code)
     return cd_hit_return_code
+
+
+def perform_clustering_on_cds(aggregated_cds_file_path):
+    """Run the CD-HIT-EST program to perform clustering on the strains representatives and pseudogenes"""
+    logger = logging.getLogger()
+    logger.info("Running CD-HIT-EST on combined representative and pseudogene cds file to create clustering")
+    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, "-c 0.75",
+                   "-n 4", "-M 16000", "-g 1", "-p 1"])
+    cd_hit_est_return_code = run(cd_hit_est_args, shell=True).returncode
+    logger.info("Finished running CD-HIT with return code %d" % cd_hit_est_return_code)
+    return cd_hit_est_return_code
 
 
 if __name__ == '__main__':
