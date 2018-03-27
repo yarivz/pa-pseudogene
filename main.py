@@ -97,7 +97,7 @@ def main():
             logger.info("Plotting strains to clusters histogram")
             set_labels_font_size()
             stats_by_total_clusters = stats_df.sort_values('total_clusters', ascending=False)
-            plt.bar(stats_by_total_clusters['total_clusters'])
+            plt.bar(stats_by_total_clusters.index.values, stats_by_total_clusters['total_clusters'])
             plt.xlabel("strains #")
             plt.ylabel("clusters #")
             plt.title("strains to clusters bar chart")
