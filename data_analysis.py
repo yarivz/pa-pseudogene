@@ -135,7 +135,7 @@ def get_genomic_stats_per_strain():
 
 def get_1st_stage_stats_per_strain():
     strains_map, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    df = pandas.DataFrame(index=numpy.arrange(0, total_strains_count), columns=('total_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
+    df = pandas.DataFrame(index=range(total_strains_count), columns=('total_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
     for strain in strains_map.values():
         total_clusters = len(strain.containing_clusters)
         missing_core = 100 - (len(strain.get_strain_core_clusters()) / total_core_clusters * 100)
