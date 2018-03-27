@@ -90,7 +90,7 @@ def main():
             #         pickle.dump(singleton_clusters, f)
         if args.graph:
             logger.info("Plotting charts from statistics")
-            if not stats_df:
+            if stats_df is None:
                 logger.info("retrieving 1st stage stats from pkl file")
                 stats_df = pandas.read_pickle(FIRST_STAGE_STATS_PKL)
 
