@@ -33,4 +33,5 @@ PSEUDOGENES_PKL = os.path.join(DATA_DIR, "pseudogenes.pkl")
 TOTAL_CLUSTERS_PKL = os.path.join(DATA_DIR, "total_clusters.pkl")
 CORE_CLUSTERS_PKL = os.path.join(DATA_DIR, "core_clusters.pkl")
 SINGLETON_CLUSTERS_PKL = os.path.join(DATA_DIR, "singleton_clusters.pkl")
+FIRST_STAGE_STATS_PKL = os.path.join(DATA_DIR, "1st_stage_stats.pkl")
 

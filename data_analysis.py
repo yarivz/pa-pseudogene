@@ -3,7 +3,11 @@ from collections import defaultdict
 
 import os
 
-from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN
+import numpy
+import pandas
+
+from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
+    CD_HIT_CLUSTERS_OUTPUT_FILE
 
 
 class Cluster:
@@ -58,12 +62,14 @@ def get_cluster_stats_per_strain(strains_map, total_strains_count):
 
 def create_strains_clusters_map(clusters_file):
     strains_map = {}
+    clusters_map = {}
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
         for line in clusters_db:
             if line.startswith(">Cluster"):
                 cluster_index = int(line.split()[-1])
                 cur_cluster = Cluster(cluster_index)
+                clusters_map[cluster_index] = cur_cluster
             else:
                 match = CLUSTER_STRAIN_PATTERN.match(line)
                 strain_index = int(match.group(1))
@@ -72,7 +78,8 @@ def create_strains_clusters_map(clusters_file):
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
     total_strains_count = len(strains_map)
-    return strains_map, total_strains_count
+    total_core_clusters = len([c for c in clusters_map if c.get_cluster_strains_num / total_strains_count >= 0.9])
+    return strains_map, total_strains_count, total_core_clusters
 
 
 def get_strain_contigs(strain_genomic_file):
@@ -124,3 +131,41 @@ def get_genomic_stats_per_strain():
             if strain_index_file is not None:
                 strain_index_file.close()
     return genomic_stats, contigs_to_strains, pseudogenes_to_strains
+
+
+def get_1st_stage_stats_per_strain():
+    strains_map, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+    df = pandas.DataFrame(index=numpy.arrange(0, total_strains_count), columns=('total_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
+    for strain in strains_map.values():
+        total_clusters = len(strain.containing_clusters)
+        missing_core = 100 - (len(strain.get_strain_core_clusters()) / total_core_clusters * 100)
+        singletons = len(strain.get_strain_singleton_clusters())
+        df.loc[strain.index] = [total_clusters, missing_core, singletons]
+    for strain_dir in os.listdir(STRAINS_DIR):
+        strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
+        cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
+        genomic_file_name = [f for f in strain_dir_files if GENOMIC_PATTERN in f and CDS_FROM_GENOMIC_PATTERN not in f][0]
+        cds_file = strain_index_file = genomic_file = None
+        try:
+            strain_index_file = open(os.path.join(STRAINS_DIR, strain_dir, STRAIN_INDEX_FILE))
+            strain_index = int(strain_index_file.readline())
+            if genomic_file_name.endswith('gz'):
+                genomic_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, genomic_file_name), 'rt')
+            else:
+                genomic_file = open(os.path.join(STRAINS_DIR, strain_dir, genomic_file_name))
+            if cds_file_name.endswith('gz'):
+                cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
+            else:
+                cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
+            strain_contigs = get_strain_contigs(genomic_file)
+            strain_pseudogenes = get_strain_pseudogenes(cds_file)
+            df.loc[strain_index]['contigs'] = strain_contigs
+            df.loc[strain_index]['pseudogenes'] = strain_pseudogenes
+        finally:
+            if genomic_file is not None:
+                genomic_file.close()
+            if cds_file is not None:
+                cds_file.close()
+            if strain_index_file is not None:
+                strain_index_file.close()
+    return df
