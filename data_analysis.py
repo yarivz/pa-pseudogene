@@ -138,7 +138,7 @@ def get_1st_stage_stats_per_strain():
     df = pandas.DataFrame(index=range(total_strains_count), columns=('total_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
     for strain in strains_map.values():
         total_clusters = len(strain.containing_clusters)
-        missing_core = 100 - (len(strain.get_strain_core_clusters()) / total_core_clusters * 100)
+        missing_core = 100 - (len(strain.get_strain_core_clusters(total_strains_count)) / total_core_clusters * 100)
         singletons = len(strain.get_strain_singleton_clusters())
         df.loc[strain.index] = [total_clusters, missing_core, singletons]
     for strain_dir in os.listdir(STRAINS_DIR):
