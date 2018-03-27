@@ -78,7 +78,7 @@ def create_strains_clusters_map(clusters_file):
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
     total_strains_count = len(strains_map)
-    total_core_clusters = len([c for c in clusters_map if c.get_cluster_strains_num / total_strains_count >= 0.9])
+    total_core_clusters = len([c for c in clusters_map.values() if c.get_cluster_strains_num() / total_strains_count >= 0.9])
     return strains_map, total_strains_count, total_core_clusters
 
 
