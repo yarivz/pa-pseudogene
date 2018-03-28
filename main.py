@@ -155,6 +155,28 @@ def main():
             plt.savefig('contigs_vs_singletons_by_strain.pdf', format="pdf")
             plt.close()
 
+            logger.info("Plotting contigs VS missing core % per strain")
+            set_labels_font_size()
+            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
+            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
+            plt.bar(sorted_stats.index.values, sorted_stats['missing_core'])
+            plt.xlabel("strains #")
+            plt.ylabel("contigs #")
+            plt.title("strains to contigs VS missing core bar chart")
+            plt.savefig('contigs_vs_missing_core_by_strain.pdf', format="pdf")
+            plt.close()
+
+            logger.info("Plotting contigs VS pseudogenes per strain")
+            set_labels_font_size()
+            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
+            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
+            plt.bar(sorted_stats.index.values, sorted_stats['pseudogenes'])
+            plt.xlabel("strains #")
+            plt.ylabel("contigs #")
+            plt.title("strains to contigs VS pseudogenes bar chart")
+            plt.savefig('contigs_vs_pseudogenes_by_strain.pdf', format="pdf")
+            plt.close()
+
             # if not total_clusters:
             #     logger.info("retrieving total_clusters from pkl file")
             #     with open(TOTAL_CLUSTERS_PKL, 'rb') as f:

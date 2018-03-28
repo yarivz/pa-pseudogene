@@ -135,12 +135,13 @@ def get_genomic_stats_per_strain():
 
 def get_1st_stage_stats_per_strain():
     strains_map, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    df = pandas.DataFrame(index=range(total_strains_count), columns=('total_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
+    df = pandas.DataFrame(index=range(total_strains_count), columns=('total_clusters', 'core_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
     for strain in strains_map.values():
         total_clusters = len(strain.containing_clusters)
-        missing_core = 100 - (len(strain.get_strain_core_clusters(total_strains_count)) / total_core_clusters * 100)
+        core_clusters = len(strain.get_strain_core_clusters(total_strains_count))
+        missing_core = 100 - (core_clusters / total_core_clusters * 100)
         singletons = len(strain.get_strain_singleton_clusters())
-        df.loc[strain.index] = [total_clusters, missing_core, singletons, 0, 0]
+        df.loc[strain.index] = [total_clusters, core_clusters, missing_core, singletons, 0, 0]
     for strain_dir in os.listdir(STRAINS_DIR):
         strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
         cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
