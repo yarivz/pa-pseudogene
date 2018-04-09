@@ -71,7 +71,7 @@ def create_1st_stage_charts(stats_df):
     ax.set_ylabel("contigs #")
     ax.set_title("strains to contigs VS singletons bar chart")
     ax.set_xticks(sorted_stats.index.values + width / 2)
-    ax.set_legend(loc='upper right')
+    ax.legend(loc='upper right')
     ax.savefig('contigs_vs_singletons_by_strain.pdf', format="pdf")
     ax.close()
 
