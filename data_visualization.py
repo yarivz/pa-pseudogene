@@ -72,7 +72,7 @@ def create_1st_stage_charts(stats_df):
     ax.set_title("strains to contigs VS singletons bar chart")
     ax.set_xticks(sorted_stats.index.values + width / 2)
     ax.legend(loc='upper right')
-    plt.savefig('contigs_vs_singletons_by_strain.pdf', format="pdf")
+    fig.savefig('contigs_vs_singletons_by_strain.pdf', format="pdf")
     plt.close()
 
     logger.info("Plotting contigs VS missing core % per strain")
