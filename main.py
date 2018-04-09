@@ -4,25 +4,17 @@ import sys
 import logging
 import os
 from subprocess import run
-import pickle
-import matplotlib
 import pandas
 
+from data_visualization import create_1st_stage_charts
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
-
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
-    CD_HIT_CLUSTERS_OUTPUT_FILE, GENOMIC_STATS_PKL, PROTEIN_STATS_PKL, TOTAL_CLUSTERS_PKL, CORE_CLUSTERS_PKL, \
-    SINGLETON_CLUSTERS_PKL, CONTIGS_PKL, PSEUDOGENES_PKL, CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
+    CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
     FIRST_STAGE_STATS_PKL
-from data_analysis import get_strains_stats, get_genomic_stats_per_strain, create_strains_clusters_map, \
-    get_1st_stage_stats_per_strain
+from data_analysis import get_1st_stage_stats_per_strain
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
-
 
 
 def main():
@@ -42,7 +34,7 @@ def main():
         os.makedirs(STRAINS_DIR)
 
     try:
-        stats_df = contigs = pseudogenes = total_clusters = core_clusters = singleton_clusters = None
+        stats_df = None
         logger.info("Starting work")
         if args.download:
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
@@ -71,209 +63,17 @@ def main():
                 stats_df.to_pickle(FIRST_STAGE_STATS_PKL)
             else:
                 logger.error("Cannot perform analysis without clusters file")
-            # genomic_stats, contigs, pseudogenes = get_genomic_stats_per_strain()
-            # with open(GENOMIC_STATS_PKL, 'wb') as f:
-            #     pickle.dump(genomic_stats, f)
-            # with open(CONTIGS_PKL, 'wb') as f:
-            #     pickle.dump(contigs, f)
-            # with open(PSEUDOGENES_PKL, 'wb') as f:
-            #     pickle.dump(pseudogenes, f)
-            # if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
-            #     cluster_stats, total_clusters, core_clusters, singleton_clusters = get_strains_stats(CD_HIT_CLUSTERS_OUTPUT_FILE)
-            #     with open(PROTEIN_STATS_PKL, 'wb') as f:
-            #         pickle.dump(cluster_stats, f)
-            #     with open(TOTAL_CLUSTERS_PKL, 'wb') as f:
-            #         pickle.dump(total_clusters, f)
-            #     with open(CORE_CLUSTERS_PKL, 'wb') as f:
-            #         pickle.dump(core_clusters, f)
-            #     with open(SINGLETON_CLUSTERS_PKL, 'wb') as f:
-            #         pickle.dump(singleton_clusters, f)
         if args.graph:
             logger.info("Plotting charts from statistics")
             if stats_df is None:
                 logger.info("retrieving 1st stage stats from pkl file")
                 stats_df = pandas.read_pickle(FIRST_STAGE_STATS_PKL)
+            create_1st_stage_charts(stats_df)
 
-            logger.info("Plotting clusters per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('total_clusters', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['total_clusters'])
-            plt.xlabel("strains #")
-            plt.ylabel("clusters #")
-            plt.title("strains to clusters bar chart")
-            plt.savefig('total_clusters_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting missing core clusters per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('missing_core', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['missing_core'])
-            plt.xlabel("strains #")
-            plt.ylabel("% of missing core clusters")
-            plt.title("strains to missing core clusters bar chart")
-            plt.savefig('missing_core_clusters_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting singleton clusters per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('singletons', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['singletons'])
-            plt.xlabel("strains #")
-            plt.ylabel("singleton clusters #")
-            plt.title("strains to singleton clusters bar chart")
-            plt.savefig('singleton_clusters_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting pseudogenes per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('pseudogenes', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['pseudogenes'])
-            plt.xlabel("strains #")
-            plt.ylabel("pseudogenes #")
-            plt.title("strains to pseudogenes bar chart")
-            plt.savefig('pseudogenes_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting contigs per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
-            plt.xlabel("strains #")
-            plt.ylabel("contigs #")
-            plt.title("strains to contigs bar chart")
-            plt.savefig('contigs_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting contigs VS singletons per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
-            plt.bar(sorted_stats.index.values, sorted_stats['singletons'])
-            plt.xlabel("strains #")
-            plt.ylabel("contigs #")
-            plt.title("strains to contigs VS singletons bar chart")
-            plt.savefig('contigs_vs_singletons_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting contigs VS missing core % per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
-            plt.bar(sorted_stats.index.values, sorted_stats['missing_core'])
-            plt.xlabel("strains #")
-            plt.ylabel("contigs #")
-            plt.title("strains to contigs VS missing core bar chart")
-            plt.savefig('contigs_vs_missing_core_by_strain.pdf', format="pdf")
-            plt.close()
-
-            logger.info("Plotting contigs VS pseudogenes per strain")
-            set_labels_font_size()
-            sorted_stats = stats_df.sort_values('contigs', ascending=False).reset_index(drop=True)
-            plt.bar(sorted_stats.index.values, sorted_stats['contigs'])
-            plt.bar(sorted_stats.index.values, sorted_stats['pseudogenes'])
-            plt.xlabel("strains #")
-            plt.ylabel("contigs #")
-            plt.title("strains to contigs VS pseudogenes bar chart")
-            plt.savefig('contigs_vs_pseudogenes_by_strain.pdf', format="pdf")
-            plt.close()
-
-            # if not total_clusters:
-            #     logger.info("retrieving total_clusters from pkl file")
-            #     with open(TOTAL_CLUSTERS_PKL, 'rb') as f:
-            #         total_clusters = pickle.load(f)
-            # if not core_clusters:
-            #     logger.info("retrieving core_clusters from pkl file")
-            #     with open(CORE_CLUSTERS_PKL, 'rb') as f:
-            #         core_clusters = pickle.load(f)
-            # if not singleton_clusters:
-            #     logger.info("retrieving singleton_clusters from pkl file")
-            #     with open(SINGLETON_CLUSTERS_PKL, 'rb') as f:
-            #         singleton_clusters = pickle.load(f)
-            # if not contigs:
-            #     logger.info("retrieving contigs from pkl file")
-            #     with open(CONTIGS_PKL, 'rb') as f:
-            #         contigs = pickle.load(f)
-            # if not pseudogenes:
-            #     logger.info("retrieving pseudogenes from pkl file")
-            #     with open(PSEUDOGENES_PKL, 'rb') as f:
-            #         pseudogenes = pickle.load(f)
-            # strains_map, total_strains_count = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-            # x_strains = []
-            # y_clusters = []
-            # logger.info("Plotting strains to clusters scatter chart")
-            # for index, strain in strains_map.items():
-            #     for c in strain.containing_clusters.keys():
-            #         x_strains.append(index)
-            #         y_clusters.append(c)
-            # plt.scatter(x_strains, y_clusters)
-            # plt.xlabel("strains (indices)")
-            # plt.ylabel("clusters (indices)")
-            # plt.title("strains to clusters heatmap")
-            # plt.savefig('clusters_by_strain_scatterplot.pdf', format="pdf")
-            # plt.close()
-            # if total_clusters:
-            #     logger.info("Plotting strains to clusters histogram")
-            #     set_labels_font_size()
-            #     plt.hist(total_clusters, color='green', bins=list(range(4800, 6900, 100)), align='left', rwidth=0.5)
-            #     plt.ylabel("strains #")
-            #     plt.xlabel("clusters #")
-            #     plt.title("strains to clusters histogram")
-            #     plt.xticks(list(range(4800, 6900, 100)))
-            #     plt.yticks(list(range(0, 500, 10)))
-            #     plt.savefig('total_clusters_by_strain_index.pdf', format="pdf")
-            #     plt.close()
-            # if core_clusters:
-            #     logger.info("Plotting strains to core clusters histogram")
-            #     set_labels_font_size()
-            #     plt.hist(core_clusters, color='green', bins=list(range(4500, 5300, 50)), align='left', rwidth=0.5)
-            #     plt.ylabel("strains #")
-            #     plt.xlabel("clusters #")
-            #     plt.title("strains to core clusters histogram")
-            #     plt.xticks(list(range(4500, 5300, 50)))
-            #     plt.savefig('core_clusters_by_strain_index.pdf', format="pdf")
-            #     plt.close()
-            # if singleton_clusters:
-            #     logger.info("Plotting strains to singleton clusters histogram")
-            #     set_labels_font_size()
-            #     plt.hist(singleton_clusters, color='green', bins=list(range(0, 100, 5)), align='left', rwidth=0.5)
-            #     plt.ylabel("strains #")
-            #     plt.xlabel("clusters #")
-            #     plt.title("strains to singleton clusters histogram")
-            #     plt.xticks(list(range(0, 100, 5)))
-            #     plt.savefig('singleton_clusters_by_strain_index.pdf', format="pdf")
-            #     plt.close()
-            # if contigs:
-            #     logger.info("Plotting strains to contigs histogram")
-            #     set_labels_font_size()
-            #     plt.hist(contigs, color='green', bins=list(range(0, 2000, 50)), align='left', rwidth=0.5)
-            #     plt.ylabel("strains #")
-            #     plt.xlabel("contigs #")
-            #     plt.title("strains to contigs histogram")
-            #     plt.xticks(list(range(0, 2000, 50)))
-            #     plt.tick_params(axis='x', which='minor', labelbottom='off')
-            #     plt.savefig('contigs_by_strain_index.pdf', format="pdf")
-            #     plt.close()
-            # if pseudogenes:
-            #     logger.info("Plotting strains to pseudogenes histogram")
-            #     set_labels_font_size()
-            #     plt.hist(pseudogenes, color='green', bins=list(range(0, 2000, 50)), align='left', rwidth=0.5)
-            #     plt.ylabel("strains #")
-            #     plt.xlabel("pseudogenes #")
-            #     plt.title("strains to pseudogenes histogram")
-            #     plt.xticks(list(range(0, 2000, 50)))
-            #     plt.tick_params(axis='x', which='minor', labelbottom='off')
-            #     plt.savefig('pseudogenes_by_strain_index.pdf', format="pdf")
-            #     plt.close()
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
         listener.join()
-
-
-def set_labels_font_size():
-    ax = plt.subplot()
-    for label in (ax.get_xticklabels() + ax.get_yticklabels()):
-        label.set_fontsize(3)
 
 
 def init_args_parser():

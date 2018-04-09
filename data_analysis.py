@@ -1,11 +1,7 @@
 import gzip
 from collections import defaultdict
-
 import os
-
-import numpy
 import pandas
-
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
     CD_HIT_CLUSTERS_OUTPUT_FILE
 
