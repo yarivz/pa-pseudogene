@@ -1,5 +1,5 @@
+import logging
 import matplotlib
-from pip.utils import logging
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
