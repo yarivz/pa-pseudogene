@@ -130,7 +130,6 @@ def create_nucleotide_clusters_map(clusters_file):
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
         for line in clusters_db:
-            print(line)
             if line.startswith(">Cluster"):
                 cluster_index = int(line.split()[-1])
                 cur_cluster = NucleotideCluster(cluster_index)
@@ -138,6 +137,8 @@ def create_nucleotide_clusters_map(clusters_file):
             else:
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
                 match = CLUSTER_STRAIN_PATTERN.match(line)
+                if not match:
+                    raise ValueError("unexpected line in clusters file does not match strain pattern: " + line)
                 strain_index = int(match.group(1))
                 seq_index = int(match.group(2))
                 cur_cluster.add_strain(strain_index)
@@ -250,7 +251,7 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
 
     strains_df = pandas.DataFrame(index=range(total_strains_count), columns=('totatl_pseudogenes', 'pseudogenes_in_cluster_without_reps'))
     for strain in second_stage_strains_map.values():
-        strains_df.loc[strain.index]['totatl_pseudogenes'] = len(first_stage_data.loc[strain.index]['pseudogenes'])
+        strains_df.loc[strain.index]['totatl_pseudogenes'] = first_stage_data.loc[strain.index]['pseudogenes']
         strains_df.loc[strain.index]['pseudogenes_in_cluster_without_reps'] = 0
         for cluster in second_stage_clusters_map.values():
             if not cluster.has_reps:
