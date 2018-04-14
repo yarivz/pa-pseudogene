@@ -13,6 +13,8 @@ GENOMIC_PATTERN = "genomic.fna"
 STRAIN_INDEX_FILE = "strain_index"
 FEATURE_TABLE_PATTERN = "feature_table.txt"
 CLUSTER_STRAIN_PATTERN = re.compile("[0-9a,> \t]+\[(\d+)\]\[(\d+)\]")
+CLUSTER_PSEUDOGENE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[p")
+CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[cluster_(\d+)\]")
 
 COMBINED_STRAIN_PROTEINS_PREFIX = "combined_strain_proteins"
 WORKER_PROTEIN_FILE_PREFIX = COMBINED_STRAIN_PROTEINS_PREFIX + "_worker_"
@@ -23,8 +25,8 @@ COMBINED_CDS_FILE_PATH = os.path.join(DATA_DIR, COMBINED_STRAIN_CDS_PREFIX + "_a
 
 CD_HIT_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'protein_clusters.txt')
 CD_HIT_CLUSTERS_OUTPUT_FILE = CD_HIT_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
-CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters.txt')
-CD_HIT_EST_CLUSTERS_OUTPUT_FILE = CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE + ".clstr"
+CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters.txt')
+CD_HIT_EST_CLUSTERS_OUTPUT_FILE = CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
 
 GENOMIC_STATS_PKL = os.path.join(DATA_DIR, "genomic_stats.pkl")
 PROTEIN_STATS_PKL = os.path.join(DATA_DIR, "protein_stats.pkl")
@@ -34,4 +36,6 @@ TOTAL_CLUSTERS_PKL = os.path.join(DATA_DIR, "total_clusters.pkl")
 CORE_CLUSTERS_PKL = os.path.join(DATA_DIR, "core_clusters.pkl")
 SINGLETON_CLUSTERS_PKL = os.path.join(DATA_DIR, "singleton_clusters.pkl")
 FIRST_STAGE_STATS_PKL = os.path.join(DATA_DIR, "1st_stage_stats.pkl")
+SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_strain_stats.pkl")
+SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_cluster_stats.pkl")
 

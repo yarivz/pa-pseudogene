@@ -9,9 +9,9 @@ import pandas
 from data_visualization import create_1st_stage_charts
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
-    CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
-    FIRST_STAGE_STATS_PKL
-from data_analysis import get_1st_stage_stats_per_strain
+    CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
+    FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL
+from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -56,13 +56,21 @@ def main():
                 perform_clustering_on_cds(COMBINED_CDS_FILE_PATH)
             else:
                 logger.error("Cannot run clustering without pre-processed cds file")
-        if args.stats:
+        if args.protein_stats:
             logger.info("Gathering genomic and 1st stage clusters statistics per strain")
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
                 stats_df = get_1st_stage_stats_per_strain()
                 stats_df.to_pickle(FIRST_STAGE_STATS_PKL)
             else:
                 logger.error("Cannot perform analysis without clusters file")
+        if args.nucleotide_stats:
+            logger.info("Gathering 2nd stage clusters statistics per strain")
+            if stats_df is None:
+                logger.info("retrieving 1st stage stats from pkl file")
+                stats_df = pandas.read_pickle(FIRST_STAGE_STATS_PKL)
+            strains_df, clusters_df = get_2nd_stage_stats_per_strain(stats_df)
+            strains_df.to_pickle(SECOND_STAGE_STRAIN_STATS_PKL)
+            clusters_df.to_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
         if args.graph:
             logger.info("Plotting charts from statistics")
             if stats_df is None:
@@ -84,7 +92,8 @@ def init_args_parser():
                         help='Specify a sample size to limit the amount of strains downloaded')
     parser.add_argument('-p', '--preprocess_proteins', action="store_true", help='Preprocess downloaded PA strains proteins')
     parser.add_argument('-c', '--cluster_proteins', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
-    parser.add_argument('-s', '--stats', action="store_true", help='Get stats from CD-HIT clustering output')
+    parser.add_argument('-s1', '--protein_stats', action="store_true", help='Get stats from CD-HIT clustering output')
+    parser.add_argument('-s2', '--nucleotide_stats', action="store_true", help='Get stats from CD-HIT-EST clustering output')
     parser.add_argument('-g', '--graph', action="store_true", help='Plot graphs from strain stats')
     parser.add_argument('-r', '--preprocess_cds', action="store_true",
                         help='Preprocess clustered PA strains proteins representative and pseudogene cds')
@@ -108,8 +117,8 @@ def perform_clustering_on_cds(aggregated_cds_file_path):
     """Run the CD-HIT-EST program to perform clustering on the strains representatives and pseudogenes"""
     logger = logging.getLogger()
     logger.info("Running CD-HIT-EST on combined representative and pseudogene cds file to create clustering")
-    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_CDS_OUTPUT_FILE, "-c 0.8",
-                   "-n 5", "-M 16000", "-g 1", "-p 1"])
+    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, "-c 0.8",
+                   "-n 5", "-M 16000", "-g 1", "-p 1", "-d 30"])
     cd_hit_est_return_code = run(cd_hit_est_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_est_return_code)
     return cd_hit_est_return_code
