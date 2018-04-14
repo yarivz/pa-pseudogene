@@ -21,7 +21,7 @@ class Cluster:
 
 class NucleotideCluster(Cluster):
     def __init__(self, index):
-        super(index)
+        super.__init__(index)
         self.member_pseudogenes = defaultdict(int)
         self.member_1st_stage_reps = defaultdict(int)
 
