@@ -136,8 +136,6 @@ def create_nucleotide_clusters_map(clusters_file):
                 cur_cluster = NucleotideCluster(cluster_index)
                 clusters_map[cluster_index] = cur_cluster
             else:
-                print(CLUSTER_PSEUDOGENE_PATTERN)
-                print(CLUSTER_STRAIN_PATTERN)
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
                 match = CLUSTER_STRAIN_PATTERN.match(line)
                 strain_index = int(match.group(1))

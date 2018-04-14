@@ -12,7 +12,7 @@ CDS_FROM_GENOMIC_PATTERN = "cds_from_genomic.fna"
 GENOMIC_PATTERN = "genomic.fna"
 STRAIN_INDEX_FILE = "strain_index"
 FEATURE_TABLE_PATTERN = "feature_table.txt"
-CLUSTER_STRAIN_PATTERN = re.compile("[0-9a,> \t]+\[(\d+)\]\[(\d+)\]")
+CLUSTER_STRAIN_PATTERN = re.compile("[0-9a-z,> \t]+\[(\d+)\]\[(\d+)\]")
 CLUSTER_PSEUDOGENE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[p")
 CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[cluster_(\d+)\]")
 
