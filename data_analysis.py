@@ -1,10 +1,13 @@
 import gzip
+import logging
 from collections import defaultdict
 import os
 import pandas
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN, \
     CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN
+
+logger = logging.getLogger(__name__)
 
 
 class Cluster:
@@ -127,11 +130,14 @@ def create_nucleotide_clusters_map(clusters_file):
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
         for line in clusters_db:
+            print(line)
             if line.startswith(">Cluster"):
                 cluster_index = int(line.split()[-1])
                 cur_cluster = NucleotideCluster(cluster_index)
                 clusters_map[cluster_index] = cur_cluster
             else:
+                print(CLUSTER_PSEUDOGENE_PATTERN)
+                print(CLUSTER_STRAIN_PATTERN)
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
                 match = CLUSTER_STRAIN_PATTERN.match(line)
                 strain_index = int(match.group(1))
@@ -235,8 +241,11 @@ def get_1st_stage_stats_per_strain():
 
 
 def get_2nd_stage_stats_per_strain(first_stage_data):
+    logger.info("Creating 1st stage clusters map from CD-HIT output")
     first_stage_clusters_map = create_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+    logger.info("Creating 1st stage reps to cluster id map from CD-HIT-EST output")
     first_stage_reps_to_cluster_id_map = create_1st_stage_representative_clusters_map(CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE)
+    logger.info("Creating 2nd stage strains & clusters maps from CD-HIT-EST output")
     second_stage_strains_map, second_stage_clusters_map = create_nucleotide_clusters_map(CD_HIT_EST_CLUSTERS_OUTPUT_FILE)
     total_strains_count = len(second_stage_strains_map.keys())
     total_clusters_count = len(second_stage_clusters_map.keys())
