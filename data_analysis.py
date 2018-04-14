@@ -262,9 +262,7 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
         clusters_df.loc[cluster.index]['total_strains'] = cluster.get_cluster_strains_num()
         clusters_df.loc[cluster.index]['1st_stage_reps'] = cluster.member_1st_stage_reps
         if len(cluster.member_1st_stage_reps) == 1:
-            representative_strain_seq = cluster.member_1st_stage_reps.items()[0]
-            representative_strain_index = representative_strain_seq[0]
-            representative_seq_index = representative_strain_seq[1]
+            [(representative_strain_index, representative_seq_index)] = cluster.member_1st_stage_reps.items()
             representative_cluster_id = first_stage_reps_to_cluster_id_map[representative_strain_index][representative_seq_index]
             representative_cluster = first_stage_clusters_map[representative_cluster_id]
             clusters_df.loc[cluster.index]['strains_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_strains_num()
