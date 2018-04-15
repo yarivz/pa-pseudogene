@@ -48,9 +48,13 @@ class Strain:
     def __init__(self, index):
         self.index = index
         self.containing_clusters = {}
+        self.seq_clusters = {}
 
     def add_cluster(self, cluster):
         self.containing_clusters[cluster.index] = cluster
+
+    def add_seq_cluster(self, seq_index, cluster_index):
+        self.seq_clusters[seq_index] = cluster_index
 
     def get_strain_core_clusters(self, total_strains_count):
         return [c for c in self.containing_clusters.values() if ((c.get_cluster_strains_num() / total_strains_count) >= 0.9)]
@@ -89,7 +93,8 @@ def create_strains_clusters_map(clusters_file):
     return strains_map, total_strains_count, total_core_clusters
 
 
-def create_clusters_map(clusters_file):
+def create_1st_stage_sequences_clusters_map(clusters_file):
+    strains_map = {}
     clusters_map = {}
     with open(clusters_file, 'r') as clusters_db:
         cur_cluster = None
@@ -101,27 +106,12 @@ def create_clusters_map(clusters_file):
             else:
                 match = CLUSTER_STRAIN_PATTERN.match(line)
                 strain_index = int(match.group(1))
-                cur_cluster.add_strain(strain_index)
-    return clusters_map
-
-
-def create_1st_stage_representative_clusters_map(representatives_file):
-    """
-    :param representatives_file:
-    :return: dict(strain index : dict(seq index : cluster index))
-    """
-    representative_map = {}
-    with open(representatives_file, 'r') as reps_db:
-        for line in reps_db:
-            if line.startswith(">") and CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN.search(line):
-                match = CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN.match(line)
-                strain_index = int(match.group(1))
                 seq_index = int(match.group(2))
-                cluster_index = int(match.group(3))
-                cur_strain = representative_map[strain_index] if strain_index in representative_map.keys() else {}
-                cur_strain[seq_index] = cluster_index
-                representative_map[strain_index] = cur_strain
-    return representative_map
+                cur_cluster.add_strain(strain_index)
+                cur_strain = strains_map[strain_index] if strain_index in strains_map.keys() else Strain(strain_index)
+                cur_strain.add_seq_cluster(seq_index, cluster_index)
+                strains_map[strain_index] = cur_strain
+    return strains_map, clusters_map
 
 
 def create_nucleotide_clusters_map(clusters_file):
@@ -241,9 +231,7 @@ def get_1st_stage_stats_per_strain():
 
 def get_2nd_stage_stats_per_strain(first_stage_data):
     logger.info("Creating 1st stage clusters map from CD-HIT output")
-    first_stage_clusters_map = create_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    logger.info("Creating 1st stage reps to cluster id map from CD-HIT-EST output")
-    first_stage_reps_to_cluster_id_map = create_1st_stage_representative_clusters_map(CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE)
+    first_stage_strain_seq_cluster_map, first_stage_clusters_map = create_1st_stage_sequences_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
     logger.info("Creating 2nd stage strains & clusters maps from CD-HIT-EST output")
     second_stage_strains_map, second_stage_clusters_map = create_nucleotide_clusters_map(CD_HIT_EST_CLUSTERS_OUTPUT_FILE)
     total_strains_count = len(second_stage_strains_map.keys())
@@ -258,16 +246,14 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
                 strains_df.loc[strain.index]['pseudogenes_in_cluster_without_reps'] += len(cluster.member_pseudogenes)
 
     clusters_df = pandas.DataFrame(index=range(total_clusters_count), columns=('total_strains', '1st_stage_reps', 'strains_in_rep_1st_stage_cluster'))
-    print(first_stage_clusters_map)
     for cluster in second_stage_clusters_map.values():
         clusters_df.loc[cluster.index]['total_strains'] = cluster.get_cluster_strains_num()
         clusters_df.loc[cluster.index]['1st_stage_reps'] = cluster.member_1st_stage_reps
-        print(cluster.member_1st_stage_reps)
         if len(cluster.member_1st_stage_reps) > 1 or len(cluster.member_1st_stage_reps.values()) > 1:
-            print("cluster %s has more than one rep" % cluster.index)
+            print("cluster %s has more than one rep: %s" % cluster.index, cluster.member_1st_stage_reps)
         elif len(cluster.member_1st_stage_reps) == 1:
             [(representative_strain_index, representative_seq_index)] = cluster.member_1st_stage_reps.items()
-            representative_cluster_id = first_stage_reps_to_cluster_id_map[representative_strain_index][representative_seq_index[0]]
+            representative_cluster_id = first_stage_strain_seq_cluster_map[representative_strain_index].seq_clusters[representative_seq_index[0]]
             representative_cluster = first_stage_clusters_map[representative_cluster_id]
             clusters_df.loc[cluster.index]['strains_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_strains_num()
     return strains_df, clusters_df
