@@ -6,7 +6,7 @@ import os
 from subprocess import run
 import pandas
 
-from data_visualization import create_1st_stage_charts
+from data_visualization import create_1st_stage_charts, create_2nd_stage_charts
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
