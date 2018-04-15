@@ -34,7 +34,7 @@ def main():
         os.makedirs(STRAINS_DIR)
 
     try:
-        stats_df = None
+        stats_df = strains_df = clusters_df = None
         logger.info("Starting work")
         if args.download:
             download_strain_files(STRAINS_DIR, log_queue, sample_size=args.sample_size)
@@ -71,13 +71,21 @@ def main():
             strains_df, clusters_df = get_2nd_stage_stats_per_strain(stats_df)
             strains_df.to_pickle(SECOND_STAGE_STRAIN_STATS_PKL)
             clusters_df.to_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
-        if args.graph:
-            logger.info("Plotting charts from statistics")
+        if args.graph_1st_stage:
+            logger.info("Plotting charts from 1st stage statistics")
             if stats_df is None:
                 logger.info("retrieving 1st stage stats from pkl file")
                 stats_df = pandas.read_pickle(FIRST_STAGE_STATS_PKL)
             create_1st_stage_charts(stats_df)
-
+        if args.graph_2nd_stage:
+            logger.info("Plotting charts from 2nd stage statistics")
+            if strains_df is None:
+                logger.info("retrieving 1st stage stats from pkl file")
+                strains_df = pandas.read_pickle(SECOND_STAGE_STRAIN_STATS_PKL)
+            if clusters_df is None:
+                logger.info("retrieving 1st stage stats from pkl file")
+                clusters_df = pandas.read_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
+            create_2nd_stage_charts(strains_df, clusters_df)
         logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
@@ -94,7 +102,8 @@ def init_args_parser():
     parser.add_argument('-c', '--cluster_proteins', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
     parser.add_argument('-s1', '--protein_stats', action="store_true", help='Get stats from CD-HIT clustering output')
     parser.add_argument('-s2', '--nucleotide_stats', action="store_true", help='Get stats from CD-HIT-EST clustering output')
-    parser.add_argument('-g', '--graph', action="store_true", help='Plot graphs from strain stats')
+    parser.add_argument('-g1', '--graph_1st_stage', action="store_true", help='Plot graphs from 1st stage strain stats')
+    parser.add_argument('-g2', '--graph_2nd_stage', action="store_true", help='Plot graphs from 2nd stage strain stats')
     parser.add_argument('-r', '--preprocess_cds', action="store_true",
                         help='Preprocess clustered PA strains proteins representative and pseudogene cds')
     parser.add_argument('-x', '--cluster_cds', action="store_true",

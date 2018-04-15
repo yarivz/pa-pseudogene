@@ -5,10 +5,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 logger = logging.getLogger(__name__)
+width = 0.35
 
 
 def create_1st_stage_charts(stats_df):
-    width = 0.35
 
     logger.info("Plotting clusters per strain")
     set_labels_font_size()
@@ -130,6 +130,55 @@ def create_1st_stage_charts(stats_df):
     plt.title("strains to pseudogenes VS singletons bar chart")
     plt.legend((chart1[0], chart2[0]), ("Pseudogenes #", "Singletons #"))
     plt.savefig('pseudogenes_vs_singletons_per_strain.pdf', format="pdf")
+    plt.close()
+
+
+def create_2nd_stage_charts(strains_df, clusters_df):
+
+    logger.info("Plotting pseudogenes VS pseudogenes in clusters without reps per strain")
+    set_labels_font_size()
+    sorted_stats = strains_df.sort_values('total_pseudogenes', ascending=False).reset_index(drop=True)
+    chart1 = plt.bar(sorted_stats.index.values, sorted_stats['total_pseudogenes'], width)
+    chart2 = plt.bar(sorted_stats.index.values + width, sorted_stats['pseudogenes_in_cluster_without_reps'], width)
+    plt.xlabel("Strains #")
+    plt.ylabel("Pseudogenes # / Pseudogenes in cluster without protein representatives")
+    plt.title("Total pseudogenes # VS Pseudogenes in cluster without protein representatives per strain")
+    plt.legend((chart1[0], chart2[0]), ("Total Pseudogenes", "Pseudogenes in cluster without protein representatives"))
+    plt.savefig('pseudogenes_vs_pseudogenes_in_repless_clusters_per_strain.pdf', format="pdf")
+    plt.close()
+
+    logger.info("Plotting strains per 2nd stage cluster")
+    set_labels_font_size()
+    sorted_stats = clusters_df.sort_values('total_strains', ascending=False).reset_index(drop=True)
+    plt.bar(sorted_stats.index.values, sorted_stats['total_strains'], width)
+    plt.xlabel("Clusters")
+    plt.ylabel("Strains #")
+    plt.title("Total strains per 2nd stage cluster")
+    plt.savefig('strains_per_2nd_stage_cluster.pdf', format="pdf")
+    plt.close()
+
+    logger.info("Plotting strains per 2nd stage clusters without protein rep")
+    set_labels_font_size()
+    clusters_without_reps = clusters_df[clusters_df['1st_stage_reps'] is None]
+    sorted_stats = clusters_without_reps.sort_values('total_strains', ascending=False).reset_index(drop=True)
+    plt.bar(sorted_stats.index.values, sorted_stats['total_strains'], width)
+    plt.xlabel("Clusters")
+    plt.ylabel("Strains #")
+    plt.title("Total strains per 2nd stage cluster")
+    plt.savefig('strains_per_2nd_stage_cluster.pdf', format="pdf")
+    plt.close()
+
+    logger.info("Plotting strains in protein rep 1st stage cluster VS pseudogenes in 2nd stage cluster")
+    set_labels_font_size()
+    clusters_with_reps = clusters_df[len(clusters_df['1st_stage_reps']) == 1]
+    sorted_stats = clusters_with_reps.sort_values('strains_in_rep_1st_stage_cluster', ascending=False).reset_index(drop=True)
+    chart1 = plt.bar(sorted_stats.index.values, sorted_stats['strains_in_rep_1st_stage_cluster'], width)
+    chart2 = plt.bar(sorted_stats.index.values + width, sorted_stats['total_strains'] - 1, width)
+    plt.xlabel("Clusters")
+    plt.ylabel("Strains in protein rep 1st stage cluster / Pseudogenes")
+    plt.title("Strains in protein rep 1st stage cluster VS Pseudogenes per 2nd stage cluster")
+    plt.legend((chart1[0], chart2[0]), ("Strains in protein rep 1st stage cluster", "Pseudogenes in 2nd stage cluster"))
+    plt.savefig('protein_rep_1st_cluster_strains_vs_pseudogenes_per_2nd_stage_cluster.pdf', format="pdf")
     plt.close()
 
 
