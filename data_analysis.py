@@ -246,18 +246,14 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
                 strains_df.loc[strain.index]['pseudogenes_in_cluster_without_reps'] += len(cluster.member_pseudogenes)
 
     clusters_df = pandas.DataFrame(index=range(total_clusters_count), columns=('total_strains', '1st_stage_reps', 'strains_in_rep_1st_stage_cluster'))
-    clusters_with_multiple_reps = {}
     for cluster in second_stage_clusters_map.values():
         clusters_df.loc[cluster.index]['total_strains'] = cluster.get_cluster_strains_num()
-        clusters_df.loc[cluster.index]['1st_stage_reps'] = cluster.member_1st_stage_reps
-        if len(cluster.member_1st_stage_reps) > 1 or len(cluster.member_1st_stage_reps.values()) > 1:
-            clusters_with_multiple_reps[cluster.index] = cluster.member_1st_stage_reps
-        elif len(cluster.member_1st_stage_reps) == 1:
+        clusters_df.loc[cluster.index]['1st_stage_reps'] = len(cluster.member_1st_stage_reps)
+        if len(cluster.member_1st_stage_reps) == 1:
             [(representative_strain_index, representative_seq_index)] = cluster.member_1st_stage_reps.items()
             representative_cluster_id = first_stage_strain_seq_cluster_map[representative_strain_index].seq_clusters[representative_seq_index[0]]
             representative_cluster = first_stage_clusters_map[representative_cluster_id]
             clusters_df.loc[cluster.index]['strains_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_strains_num()
-    logger.info("there are %s clusters with multiple reps" % len(clusters_with_multiple_reps))
     return strains_df, clusters_df
 
 

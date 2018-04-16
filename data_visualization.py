@@ -141,8 +141,8 @@ def create_2nd_stage_charts(strains_df, clusters_df):
     chart1 = plt.bar(sorted_stats.index.values, sorted_stats['total_pseudogenes'], width)
     chart2 = plt.bar(sorted_stats.index.values + width, sorted_stats['pseudogenes_in_cluster_without_reps'], width)
     plt.xlabel("Strains #")
-    plt.ylabel("Pseudogenes # / Pseudogenes in cluster without protein representatives")
-    plt.title("Total pseudogenes # VS Pseudogenes in cluster without protein representatives per strain")
+    plt.ylabel("Pseudogenes # / Pseudogenes in cluster\nwithout protein representatives")
+    plt.title("Total pseudogenes # VS Pseudogenes in cluster\nwithout protein representatives per strain")
     plt.legend((chart1[0], chart2[0]), ("Total Pseudogenes", "Pseudogenes in cluster without protein representatives"))
     plt.savefig('pseudogenes_vs_pseudogenes_in_repless_clusters_per_strain.pdf', format="pdf")
     plt.close()
@@ -159,7 +159,7 @@ def create_2nd_stage_charts(strains_df, clusters_df):
 
     logger.info("Plotting strains per 2nd stage clusters without protein rep")
     set_labels_font_size()
-    clusters_without_reps = clusters_df.loc[clusters_df['1st_stage_reps'] == {}]
+    clusters_without_reps = clusters_df[clusters_df['1st_stage_reps'] == 0]
     sorted_stats = clusters_without_reps.sort_values('total_strains', ascending=False).reset_index(drop=True)
     plt.bar(sorted_stats.index.values, sorted_stats['total_strains'], width)
     plt.xlabel("Clusters")
@@ -170,7 +170,7 @@ def create_2nd_stage_charts(strains_df, clusters_df):
 
     logger.info("Plotting strains in protein rep 1st stage cluster VS pseudogenes in 2nd stage cluster")
     set_labels_font_size()
-    clusters_with_reps = clusters_df[len(clusters_df['1st_stage_reps']) == 1]
+    clusters_with_reps = clusters_df[clusters_df['1st_stage_reps'] == 1]
     sorted_stats = clusters_with_reps.sort_values('strains_in_rep_1st_stage_cluster', ascending=False).reset_index(drop=True)
     chart1 = plt.bar(sorted_stats.index.values, sorted_stats['strains_in_rep_1st_stage_cluster'], width)
     chart2 = plt.bar(sorted_stats.index.values + width, sorted_stats['total_strains'] - 1, width)
