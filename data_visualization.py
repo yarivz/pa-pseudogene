@@ -159,7 +159,7 @@ def create_2nd_stage_charts(strains_df, clusters_df):
 
     logger.info("Plotting strains per 2nd stage clusters without protein rep")
     set_labels_font_size()
-    clusters_without_reps = clusters_df.loc[clusters_df['1st_stage_reps'] == []]
+    clusters_without_reps = clusters_df.loc[clusters_df['1st_stage_reps'] is None]
     sorted_stats = clusters_without_reps.sort_values('total_strains', ascending=False).reset_index(drop=True)
     plt.bar(sorted_stats.index.values, sorted_stats['total_strains'], width)
     plt.xlabel("Clusters")
