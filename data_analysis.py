@@ -4,8 +4,7 @@ from collections import defaultdict
 import os
 import pandas
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
-    CD_HIT_CLUSTERS_OUTPUT_FILE, CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN, \
-    CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN
+    CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -237,13 +236,13 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
     total_strains_count = len(second_stage_strains_map.keys())
     total_clusters_count = len(second_stage_clusters_map.keys())
 
-    strains_df = pandas.DataFrame(index=range(total_strains_count), columns=('total_pseudogenes', 'pseudogenes_in_cluster_without_reps'))
+    strains_df = pandas.DataFrame(index=range(total_strains_count), columns=('total_pseudogenes', 'pseudogenes_in_clusters_without_reps'))
     for strain in second_stage_strains_map.values():
         strains_df.loc[strain.index]['total_pseudogenes'] = first_stage_data.loc[strain.index]['pseudogenes']
         strains_df.loc[strain.index]['pseudogenes_in_cluster_without_reps'] = 0
         for cluster in second_stage_clusters_map.values():
-            if not cluster.has_reps:
-                strains_df.loc[strain.index]['pseudogenes_in_cluster_without_reps'] += len(cluster.member_pseudogenes)
+            if not cluster.has_reps():
+                strains_df.loc[strain.index]['pseudogenes_in_clusters_without_reps'] += len(cluster.member_pseudogenes[strain.index])
 
     clusters_df = pandas.DataFrame(index=range(total_clusters_count), columns=('total_strains', '1st_stage_reps', 'strains_in_rep_1st_stage_cluster'))
     for cluster in second_stage_clusters_map.values():
