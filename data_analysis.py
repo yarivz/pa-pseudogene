@@ -241,7 +241,7 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
         strains_df.loc[strain.index]['total_pseudogenes'] = first_stage_data.loc[strain.index]['pseudogenes']
         strains_df.loc[strain.index]['pseudogenes_in_clusters_without_reps'] = 0
         for cluster in second_stage_clusters_map.values():
-            if not cluster.has_reps():
+            if not cluster.has_reps() and strain.index in cluster.member_pseudogenes.keys():
                 strains_df.loc[strain.index]['pseudogenes_in_clusters_without_reps'] += len(cluster.member_pseudogenes[strain.index])
 
     clusters_df = pandas.DataFrame(index=range(total_clusters_count), columns=('total_strains', '1st_stage_reps', 'strains_in_rep_1st_stage_cluster'))
