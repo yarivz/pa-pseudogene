@@ -125,10 +125,10 @@ def create_1st_stage_charts(stats_df):
     sorted_stats = stats_df.sort_values('pseudogenes', ascending=False).reset_index(drop=True)
     chart1 = plt.bar(sorted_stats.index.values, sorted_stats['pseudogenes'], width)
     chart2 = plt.bar(sorted_stats.index.values + width, sorted_stats['singletons'], width)
-    plt.xlabel("Strains #")
-    plt.ylabel("Pseudogenes # / Singletons #")
+    plt.xlabel("Strains")
+    plt.ylabel("Pseudogenes / Singletons")
     plt.title("strains to pseudogenes VS singletons bar chart")
-    plt.legend((chart1[0], chart2[0]), ("Pseudogenes #", "Singletons #"))
+    plt.legend((chart1[0], chart2[0]), ("Pseudogenes", "Singletons"))
     plt.savefig('pseudogenes_vs_singletons_per_strain.pdf', format="pdf")
     plt.close()
 
@@ -157,18 +157,18 @@ def create_2nd_stage_charts(strains_df, clusters_df):
     plt.savefig('strains_per_2nd_stage_cluster.pdf', format="pdf")
     plt.close()
 
-    logger.info("Plotting strains per 2nd stage clusters without protein rep")
+    logger.info("Plotting strains per 2nd stage clusters without protein sequences")
     set_labels_font_size()
     clusters_without_reps = clusters_df[clusters_df['1st_stage_reps'] == 0]
     sorted_stats = clusters_without_reps.sort_values('total_strains', ascending=False).reset_index(drop=True)
     plt.bar(sorted_stats.index.values, sorted_stats['total_strains'], width)
     plt.xlabel("Clusters")
-    plt.ylabel("Strains #")
-    plt.title("Total strains per 2nd stage cluster")
-    plt.savefig('strains_per_2nd_stage_cluster_without_protein_rep.pdf', format="pdf")
+    plt.ylabel("Strains")
+    plt.title("Total strains per 2nd stage cluster without protein sequences")
+    plt.savefig('strains_per_2nd_stage_cluster_without_protein_sequences.pdf', format="pdf")
     plt.close()
 
-    logger.info("Plotting strains in protein rep 1st stage cluster VS pseudogenes in 2nd stage cluster")
+    logger.info("Plotting strains in protein sequence's 1st stage cluster VS pseudogenes in 2nd stage cluster")
     set_labels_font_size()
     clusters_with_reps = clusters_df[clusters_df['1st_stage_reps'] == 1]
     sorted_stats = clusters_with_reps.sort_values('strains_in_rep_1st_stage_cluster', ascending=False).reset_index(drop=True)
