@@ -299,7 +299,7 @@ def get_2nd_stage_stats_per_cluster():
         clusters_df.loc[cluster.index]['protein_seqs'] = len([seq for strain_proteins in cluster.member_protein_seqs.values() for seq in strain_proteins])
         clusters_df.loc[cluster.index]['strains_of_protein_seqs'] = len(cluster.member_protein_seqs.keys())
         clusters_df.loc[cluster.index]['pseudogenes'] = len([seq for strain_pseudos in cluster.member_pseudogenes.values() for seq in strain_pseudos])
-        clusters_df.loc[cluster.index]['strains_of_protein_seqs'] = len(cluster.member_pseudogenes.keys())
+        clusters_df.loc[cluster.index]['strains_of_pseudogenes'] = len(cluster.member_pseudogenes.keys())
         clusters_df.loc[cluster.index]['avg_protein_len'] = cluster.get_avg_protein_seq_len()
         clusters_df.loc[cluster.index]['avg_pseudogene_len'] = cluster.get_avg_pseudogene_seq_len()
         if clusters_df.loc[cluster.index]['protein_seqs'] == 1:
