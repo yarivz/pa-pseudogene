@@ -15,7 +15,7 @@ FEATURE_TABLE_PATTERN = "feature_table.txt"
 CLUSTER_STRAIN_PATTERN = re.compile("[0-9a-z,> \t]+\[(\d+)\]\[(\d+)\]")
 CLUSTER_PSEUDOGENE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[p")
 CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[cluster_(\d+)\]")
-CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN = re.compile(r"(\d+)nt,")
+CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN = re.compile("[0-9 ]+(\d+)nt,")
 
 COMBINED_STRAIN_PROTEINS_PREFIX = "combined_strain_proteins"
 WORKER_PROTEIN_FILE_PREFIX = COMBINED_STRAIN_PROTEINS_PREFIX + "_worker_"
