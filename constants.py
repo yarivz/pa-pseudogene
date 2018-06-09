@@ -15,6 +15,7 @@ FEATURE_TABLE_PATTERN = "feature_table.txt"
 CLUSTER_STRAIN_PATTERN = re.compile("[0-9a-z,> \t]+\[(\d+)\]\[(\d+)\]")
 CLUSTER_PSEUDOGENE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[p")
 CLUSTER_1ST_STAGE_REPRESENTATIVE_PATTERN = re.compile(CLUSTER_STRAIN_PATTERN.pattern + "\[cluster_(\d+)\]")
+CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN = re.compile("[0-9 \t]+(0-9)+nt,")
 
 COMBINED_STRAIN_PROTEINS_PREFIX = "combined_strain_proteins"
 WORKER_PROTEIN_FILE_PREFIX = COMBINED_STRAIN_PROTEINS_PREFIX + "_worker_"
@@ -38,5 +39,7 @@ SINGLETON_CLUSTERS_PKL = os.path.join(DATA_DIR, "singleton_clusters.pkl")
 FIRST_STAGE_STATS_PKL = os.path.join(DATA_DIR, "1st_stage_stats.pkl")
 SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_strain_stats.pkl")
 SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_cluster_stats.pkl")
+SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_aggregated_cluster_stats.pkl")
 
 FIRST_STAGE_STATS_CSV = os.path.join(DATA_DIR, "1st_stage_stats.csv")
+SECOND_STAGE_STATS_CSV = os.path.join(DATA_DIR, "2nd_stage_stats.csv")

@@ -10,8 +10,10 @@ from data_visualization import create_1st_stage_charts, create_2nd_stage_charts
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
-    FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL, FIRST_STAGE_STATS_CSV
-from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain
+    FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL, FIRST_STAGE_STATS_CSV, \
+    CD_HIT_EST_CLUSTERS_OUTPUT_FILE, SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL, SECOND_STAGE_STATS_CSV
+from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
+    get_2nd_stage_stats_per_cluster
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -87,13 +89,21 @@ def main():
                 clusters_df = pandas.read_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
             create_2nd_stage_charts(strains_df, clusters_df)
         if args.get_1st_stage_stats_csv:
-            logger.info("Gathering genomic and 1st stage clusters statistics per strain as CSV file")
+            logger.info("Gathering genomic and protein clusters statistics per strain as CSV file")
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
                 stats_df = get_1st_stage_stats_per_strain()
                 stats_df.to_pickle(FIRST_STAGE_STATS_PKL)
             else:
                 logger.error("Cannot perform analysis without clusters file")
             stats_df.to_csv(FIRST_STAGE_STATS_CSV)
+        if args.get_2nd_stage_stats_csv:
+            logger.info("Gathering 2nd stage clusters statistics per cluster as CSV file")
+            if os.path.exists(CD_HIT_EST_CLUSTERS_OUTPUT_FILE):
+                cluster_stats = get_2nd_stage_stats_per_cluster()
+                cluster_stats.to_pickle(SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL)
+            else:
+                logger.error("Cannot perform analysis without clusters file")
+            cluster_stats.to_csv(SECOND_STAGE_STATS_CSV)
 
         logger.info("Finished work, exiting")
     finally:
@@ -105,13 +115,14 @@ def init_args_parser():
     parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
                                                  'in Pseudomonas Areguinosa strains')
     parser.add_argument('-dl', '--download', action="store_true", help='Download all valid PA strains from the refseq ftp for analysis')
-    parser.add_argument('-s1csv', '--get_1st_stage_stats_csv', action="store_true", help='Get stage 1 stats in csv')
     parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
     parser.add_argument('-p', '--preprocess_proteins', action="store_true", help='Preprocess downloaded PA strains proteins')
     parser.add_argument('-c', '--cluster_proteins', action="store_true", help='Run CD-HIT clustering on preprocessed PA strains proteins')
     parser.add_argument('-s1', '--protein_stats', action="store_true", help='Get stats from CD-HIT clustering output')
+    parser.add_argument('-s1csv', '--get_1st_stage_stats_csv', action="store_true", help='Get stage 1 stats in csv')
     parser.add_argument('-s2', '--nucleotide_stats', action="store_true", help='Get stats from CD-HIT-EST clustering output')
+    parser.add_argument('-s2csv', '--get_2nd_stage_stats_csv', action="store_true", help='Get stage 2 nucleotide clusters stats in csv')
     parser.add_argument('-g1', '--graph_1st_stage', action="store_true", help='Plot graphs from 1st stage strain stats')
     parser.add_argument('-g2', '--graph_2nd_stage', action="store_true", help='Plot graphs from 2nd stage strain stats')
     parser.add_argument('-r', '--preprocess_cds', action="store_true",
