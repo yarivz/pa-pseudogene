@@ -86,7 +86,6 @@ def main():
                 logger.info("retrieving 1st stage stats from pkl file")
                 clusters_df = pandas.read_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
             create_2nd_stage_charts(strains_df, clusters_df)
-        logger.info("Finished work, exiting")
         if args.get_1st_stage_stats_csv:
             logger.info("Gathering genomic and 1st stage clusters statistics per strain as CSV file")
             if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
@@ -95,6 +94,8 @@ def main():
             else:
                 logger.error("Cannot perform analysis without clusters file")
             stats_df.to_csv(FIRST_STAGE_STATS_CSV)
+
+        logger.info("Finished work, exiting")
     finally:
         log_queue.put_nowait(None)
         listener.join()
