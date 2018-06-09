@@ -137,7 +137,7 @@ def create_nucleotide_clusters_map(clusters_file):
             else:
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
                 index_match = CLUSTER_STRAIN_PATTERN.match(line)
-                len_match = CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN.match(line)
+                len_match = CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN.search(line)
                 if not index_match:
                     raise ValueError("line in clusters file %s does not match strain index pattern %s" % (line, CLUSTER_STRAIN_PATTERN.pattern))
                 if not len_match:
