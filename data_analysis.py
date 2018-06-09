@@ -89,7 +89,7 @@ def create_strains_clusters_map(clusters_file):
                 strains_map[strain_index] = cur_strain
     total_strains_count = len(strains_map)
     total_core_clusters = len([c for c in clusters_map.values() if c.get_cluster_strains_num() / total_strains_count >= 0.9])
-    return strains_map, total_strains_count, total_core_clusters
+    return strains_map, clusters_map, total_strains_count, total_core_clusters
 
 
 def create_1st_stage_sequences_clusters_map(clusters_file):
@@ -147,11 +147,15 @@ def get_strain_contigs(strain_genomic_file):
 
 
 def get_strain_pseudogenes(strain_cds_file):
+    genes = 0
     pseudogenes = 0
     for line in strain_cds_file:
-        if "pseudo=true" in line:
-            pseudogenes += 1
-    return pseudogenes
+        if line.startswith('>'):
+            if "pseudo=true" in line:
+                pseudogenes += 1
+            else:
+                genes += 1
+    return genes, pseudogenes
 
 
 def get_genomic_stats_per_strain():
@@ -176,7 +180,7 @@ def get_genomic_stats_per_strain():
                 cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
             strain_contigs = get_strain_contigs(genomic_file)
             contigs_to_strains.append(strain_contigs)
-            strain_pseudogenes = get_strain_pseudogenes(cds_file)
+            _, strain_pseudogenes = get_strain_pseudogenes(cds_file)
             pseudogenes_to_strains.append(strain_pseudogenes)
             genomic_stats[strain_index] = "Contigs: " + str(strain_contigs) + ", Pseudogenes: " + str(strain_pseudogenes)
         finally:
@@ -190,8 +194,8 @@ def get_genomic_stats_per_strain():
 
 
 def get_1st_stage_stats_per_strain():
-    strains_map, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    df = pandas.DataFrame(index=range(total_strains_count), columns=('total_clusters', 'core_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes'))
+    strains_map, _, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+    df = pandas.DataFrame(index=range(total_strains_count), columns=('strain_name', 'total_clusters', 'core_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes', 'genes'))
     for strain in strains_map.values():
         total_clusters = len(strain.containing_clusters)
         core_clusters = len(strain.get_strain_core_clusters(total_strains_count))
@@ -206,6 +210,7 @@ def get_1st_stage_stats_per_strain():
         try:
             strain_index_file = open(os.path.join(STRAINS_DIR, strain_dir, STRAIN_INDEX_FILE))
             strain_index = int(strain_index_file.readline())
+            df.loc[strain_index]['strain_name'] = strain_dir
             if genomic_file_name.endswith('gz'):
                 genomic_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, genomic_file_name), 'rt')
             else:
@@ -215,8 +220,9 @@ def get_1st_stage_stats_per_strain():
             else:
                 cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
             strain_contigs = get_strain_contigs(genomic_file)
-            strain_pseudogenes = get_strain_pseudogenes(cds_file)
+            strain_genes, strain_pseudogenes = get_strain_pseudogenes(cds_file)
             df.loc[strain_index]['contigs'] = strain_contigs
+            df.loc[strain_index]['genes'] = strain_genes
             df.loc[strain_index]['pseudogenes'] = strain_pseudogenes
         finally:
             if genomic_file is not None:
@@ -255,6 +261,14 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
             clusters_df.loc[cluster.index]['strains_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_strains_num()
     return strains_df, clusters_df
 
+
+def get_1st_stage_strains_per_clusters_stats():
+    logger.info("Creating 1st stage clusters map from CD-HIT output")
+    _, first_stage_clusters_map, total_strains_count, _ = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
+    strains_percentage_per_cluster = {}
+    for cluster in first_stage_clusters_map.items():
+        strains_percentage_per_cluster[cluster.index()] = (cluster.get_cluster_strains_num() / total_strains_count) * 100
+    return strains_percentage_per_cluster
 
 
 

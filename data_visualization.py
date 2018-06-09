@@ -1,6 +1,8 @@
 import logging
 import matplotlib
 
+from data_analysis import get_1st_stage_strains_per_clusters_stats
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
@@ -18,6 +20,16 @@ def create_1st_stage_charts(stats_df):
     plt.ylabel("Clusters #")
     plt.title("Clusters per strain")
     plt.savefig('clusters_per_strain.pdf', format="pdf")
+    plt.close()
+
+    logger.info("Plotting core clusters per strain")
+    set_labels_font_size()
+    sorted_stats = stats_df.sort_values('core_clusters', ascending=False).reset_index(drop=True)
+    plt.bar(sorted_stats.index.values, sorted_stats['core_clusters'])
+    plt.xlabel("Strains #")
+    plt.ylabel("Core Clusters #")
+    plt.title("Core Clusters per strain")
+    plt.savefig('core_clusters_per_strain.pdf', format="pdf")
     plt.close()
 
     logger.info("Plotting missing core clusters per strain")
@@ -130,6 +142,16 @@ def create_1st_stage_charts(stats_df):
     plt.title("strains to pseudogenes VS singletons bar chart")
     plt.legend((chart1[0], chart2[0]), ("Pseudogenes", "Singletons"))
     plt.savefig('pseudogenes_vs_singletons_per_strain.pdf', format="pdf")
+    plt.close()
+
+    logger.info("Plotting % of total strains per number of clusters")
+    set_labels_font_size()
+    data = get_1st_stage_strains_per_clusters_stats().values()
+    plt.hist(data)
+    plt.xlabel("Clusters #")
+    plt.ylabel("% of total strains")
+    plt.title("% of total strains per clusters histogram")
+    plt.savefig('percentage_of_total_strains_per_clusters_hist.pdf', format="pdf")
     plt.close()
 
 

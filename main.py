@@ -10,7 +10,7 @@ from data_visualization import create_1st_stage_charts, create_2nd_stage_charts
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_REPS_OUTPUT_FILE, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
-    FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL
+    FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL, FIRST_STAGE_STATS_CSV
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
@@ -87,6 +87,14 @@ def main():
                 clusters_df = pandas.read_pickle(SECOND_STAGE_CLUSTER_STATS_PKL)
             create_2nd_stage_charts(strains_df, clusters_df)
         logger.info("Finished work, exiting")
+        if args.get_1st_stage_stats_csv:
+            logger.info("Gathering genomic and 1st stage clusters statistics per strain as CSV file")
+            if os.path.exists(CD_HIT_CLUSTERS_OUTPUT_FILE):
+                stats_df = get_1st_stage_stats_per_strain()
+                stats_df.to_pickle(FIRST_STAGE_STATS_PKL)
+            else:
+                logger.error("Cannot perform analysis without clusters file")
+            stats_df.to_csv(FIRST_STAGE_STATS_CSV)
     finally:
         log_queue.put_nowait(None)
         listener.join()
@@ -95,7 +103,8 @@ def main():
 def init_args_parser():
     parser = argparse.ArgumentParser(description='Data processing pipeline for pseudogene search '
                                                  'in Pseudomonas Areguinosa strains')
-    parser.add_argument('-d', '--download', action="store_true", help='Download all valid PA strains from the refseq ftp for analysis')
+    parser.add_argument('-dl', '--download', action="store_true", help='Download all valid PA strains from the refseq ftp for analysis')
+    parser.add_argument('-s1csv', '--get_1st_stage_stats_csv', action="store_true", help='Get stage 1 stats in csv')
     parser.add_argument('--sample', type=int, dest='sample_size', default=None,
                         help='Specify a sample size to limit the amount of strains downloaded')
     parser.add_argument('-p', '--preprocess_proteins', action="store_true", help='Preprocess downloaded PA strains proteins')

@@ -39,3 +39,4 @@ FIRST_STAGE_STATS_PKL = os.path.join(DATA_DIR, "1st_stage_stats.pkl")
 SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_strain_stats.pkl")
 SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_cluster_stats.pkl")
 
+FIRST_STAGE_STATS_CSV = os.path.join(DATA_DIR, "1st_stage_stats.csv")
