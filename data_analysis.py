@@ -48,10 +48,10 @@ class NucleotideCluster(Cluster):
         return len(self.member_protein_seqs) == 0
 
     def get_avg_protein_seq_len(self):
-        return self.total_protein_len / len(self.member_protein_seqs)
+        return self.total_protein_len / len(self.member_protein_seqs) if len(self.member_protein_seqs) > 0 else 0
 
     def get_avg_pseudogene_seq_len(self):
-        return self.total_pseudogene_len / len(self.member_pseudogenes)
+        return self.total_pseudogene_len / len(self.member_pseudogenes) if len(self.member_pseudogenes) > 0 else 0
 
 
 class Strain:
