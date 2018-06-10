@@ -332,14 +332,15 @@ def filter_2nd_stage_clusters_with_multiple_proteins():
             num_of_proteins = 0
             for line in clusters_db:
                 if line.startswith(">Cluster"):
-                    if cluster and num_of_proteins > 1:
+                    if num_of_proteins > 1:
                         output.write(cluster)
-                    else:
-                        cluster = ''
-                        num_of_proteins = 0
+                    cluster = ''
+                    num_of_proteins = 0
                     cluster += line
                 else:
                     cluster += line
                     if not CLUSTER_PSEUDOGENE_PATTERN.search(line):
                         num_of_proteins += 1
-
+            if num_of_proteins > 1:
+                output.write(cluster)
+            return
