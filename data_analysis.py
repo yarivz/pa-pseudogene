@@ -333,7 +333,6 @@ def filter_2nd_stage_clusters_with_multiple_proteins():
             for line in clusters_db:
                 if line.startswith(">Cluster"):
                     if num_of_proteins > 1:
-                        logger.info("found cluster %d")
                         output.write(cluster)
                     cluster = ''
                     num_of_proteins = 0

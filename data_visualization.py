@@ -14,6 +14,8 @@ width = 0.35
 
 
 def create_1st_stage_charts(stats_df):
+    if not os.path.exists(FIRST_STAGE_GRAPHS_DIR):
+        os.mkdir(FIRST_STAGE_GRAPHS_DIR)
     os.chdir(FIRST_STAGE_GRAPHS_DIR)
 
     logger.info("Plotting clusters per strain")
@@ -160,6 +162,8 @@ def create_1st_stage_charts(stats_df):
 
 
 def create_2nd_stage_charts(strains_df, clusters_df):
+    if not os.path.exists(SECOND_STAGE_GRAPHS_DIR):
+        os.mkdir(SECOND_STAGE_GRAPHS_DIR)
     os.chdir(SECOND_STAGE_GRAPHS_DIR)
 
     logger.info("Plotting pseudogenes VS pseudogenes in clusters without reps per strain")
