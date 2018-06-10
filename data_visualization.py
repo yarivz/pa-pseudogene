@@ -1,6 +1,9 @@
 import logging
+import os
+
 import matplotlib
 
+from constants import FIRST_STAGE_GRAPHS_DIR, SECOND_STAGE_GRAPHS_DIR
 from data_analysis import get_1st_stage_strains_per_clusters_stats
 
 matplotlib.use('Agg')
@@ -11,6 +14,7 @@ width = 0.35
 
 
 def create_1st_stage_charts(stats_df):
+    os.chdir(FIRST_STAGE_GRAPHS_DIR)
 
     logger.info("Plotting clusters per strain")
     set_labels_font_size()
@@ -156,6 +160,7 @@ def create_1st_stage_charts(stats_df):
 
 
 def create_2nd_stage_charts(strains_df, clusters_df):
+    os.chdir(SECOND_STAGE_GRAPHS_DIR)
 
     logger.info("Plotting pseudogenes VS pseudogenes in clusters without reps per strain")
     set_labels_font_size()

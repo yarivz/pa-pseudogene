@@ -5,7 +5,7 @@ import os
 import pandas
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN, \
-    CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN
+    CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE
 
 logger = logging.getLogger(__name__)
 
@@ -281,7 +281,7 @@ def get_1st_stage_strains_per_clusters_stats():
     logger.info("Creating 1st stage clusters map from CD-HIT output")
     _, first_stage_clusters_map, total_strains_count, _ = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
     strains_percentage_per_cluster = {}
-    for cluster in first_stage_clusters_map.items():
+    for cluster in first_stage_clusters_map.values():
         strains_percentage_per_cluster[cluster.index()] = (cluster.get_cluster_strains_num() / total_strains_count) * 100
     return strains_percentage_per_cluster
 
@@ -323,4 +323,23 @@ def get_2nd_stage_stats_per_cluster():
     logger.info("Type 4 (multiple proteins +- pseudogenes): %d" % type4)
 
     return clusters_df
+
+
+def filter_2nd_stage_clusters_with_multiple_proteins():
+    with open(CD_HIT_EST_CLUSTERS_OUTPUT_FILE, 'r') as clusters_db:
+        with open(CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE, 'w') as output:
+            cluster = ''
+            num_of_proteins = 0
+            for line in clusters_db:
+                if line.startswith(">Cluster"):
+                    if cluster and num_of_proteins > 1:
+                        output.write(cluster)
+                    else:
+                        cluster = ''
+                        num_of_proteins = 0
+                    cluster += line
+                else:
+                    cluster += line
+                    if not CLUSTER_PSEUDOGENE_PATTERN.search(line):
+                        num_of_proteins += 1
 

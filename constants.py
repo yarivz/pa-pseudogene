@@ -3,6 +3,8 @@ import re
 
 DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
+FIRST_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "1st_stage_graphs"
+SECOND_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "2nd_stage_graphs"
 
 NUMBER_OF_PROCESSES = os.cpu_count()
 
@@ -28,6 +30,7 @@ CD_HIT_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'protein_clusters.txt')
 CD_HIT_CLUSTERS_OUTPUT_FILE = CD_HIT_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
 CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters.txt')
 CD_HIT_EST_CLUSTERS_OUTPUT_FILE = CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
+CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters_multiple_proteins.txt.clstr')
 
 GENOMIC_STATS_PKL = os.path.join(DATA_DIR, "genomic_stats.pkl")
 PROTEIN_STATS_PKL = os.path.join(DATA_DIR, "protein_stats.pkl")

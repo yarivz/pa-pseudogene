@@ -13,7 +13,7 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_R
     FIRST_STAGE_STATS_PKL, SECOND_STAGE_STRAIN_STATS_PKL, SECOND_STAGE_CLUSTER_STATS_PKL, FIRST_STAGE_STATS_CSV, \
     CD_HIT_EST_CLUSTERS_OUTPUT_FILE, SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL, SECOND_STAGE_STATS_CSV
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
-    get_2nd_stage_stats_per_cluster
+    get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -104,6 +104,8 @@ def main():
             else:
                 logger.error("Cannot perform analysis without clusters file")
             cluster_stats.to_csv(SECOND_STAGE_STATS_CSV)
+        if args.filter_clusters:
+            filter_2nd_stage_clusters_with_multiple_proteins()
 
         logger.info("Finished work, exiting")
     finally:
@@ -129,6 +131,8 @@ def init_args_parser():
                         help='Preprocess clustered PA strains proteins representative and pseudogene cds')
     parser.add_argument('-x', '--cluster_cds', action="store_true",
                         help='Run CD-HIT clustering on preprocessed PA strains cds of representatives and pseudogenes')
+    parser.add_argument('-f', '--filter_clusters', action="store_true",
+                        help='Filter 2nd stage clusters with multiple proteins')
     return parser
 
 
