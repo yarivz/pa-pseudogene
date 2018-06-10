@@ -19,7 +19,7 @@ class Cluster:
         self.member_strains[strain_index] += 1
 
     def get_cluster_strains_num(self):
-        return len(self.member_strains)
+        return len(self.member_strains.keys())
 
 
 class NucleotideCluster(Cluster):
@@ -280,9 +280,9 @@ def get_2nd_stage_stats_per_strain(first_stage_data):
 def get_1st_stage_strains_per_clusters_stats():
     logger.info("Creating 1st stage clusters map from CD-HIT output")
     _, first_stage_clusters_map, total_strains_count, _ = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
-    strains_percentage_per_cluster = {}
+    strains_percentage_per_cluster = []
     for cluster in first_stage_clusters_map.values():
-        strains_percentage_per_cluster[cluster.index] = (cluster.get_cluster_strains_num() / total_strains_count) * 100
+        strains_percentage_per_cluster.append((cluster.get_cluster_strains_num() / total_strains_count) * 100)
     return strains_percentage_per_cluster
 
 
