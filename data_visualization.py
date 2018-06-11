@@ -153,7 +153,7 @@ def create_1st_stage_charts(stats_df):
     logger.info("Plotting % of total strains per number of clusters")
     set_labels_font_size()
     data = get_1st_stage_strains_per_clusters_stats()
-    plt.hist(data)
+    plt.hist(data, bins=range(1, 100))
     plt.xlabel("% of total strains")
     plt.ylabel("Clusters #")
     plt.title("% of total strains per clusters histogram")
