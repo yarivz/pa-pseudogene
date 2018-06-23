@@ -3,6 +3,8 @@ import re
 
 DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
+PICKLES_DIR = DATA_DIR + os.sep + "pickles"
+CLUSTERS_DIR = DATA_DIR + os.sep + "clusters"
 FIRST_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "1st_stage_graphs"
 SECOND_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "2nd_stage_graphs"
 
@@ -25,24 +27,26 @@ COMBINED_PROTEINS_FILE_PATH = os.path.join(DATA_DIR, COMBINED_STRAIN_PROTEINS_PR
 COMBINED_STRAIN_CDS_PREFIX = "combined_strain_reps_pseudogenes_cds"
 WORKER_CDS_FILE_PREFIX = COMBINED_STRAIN_CDS_PREFIX + "_worker_"
 COMBINED_CDS_FILE_PATH = os.path.join(DATA_DIR, COMBINED_STRAIN_CDS_PREFIX + "_all.fasta")
+COMBINED_STRAIN_REPS_CDS_PATH = os.path.join(DATA_DIR, "combined_strain_reps_cds.fasta")
+COMBINED_STRAIN_PSEUDOGENES_PATH = os.path.join(DATA_DIR, "combined_strain_pseudogenes.fasta")
 
-CD_HIT_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'protein_clusters.txt')
+CD_HIT_CLUSTER_REPS_OUTPUT_FILE = os.path.join(CLUSTERS_DIR, 'protein_clusters.txt')
 CD_HIT_CLUSTERS_OUTPUT_FILE = CD_HIT_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
-CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters.txt')
+CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE = os.path.join(CLUSTERS_DIR, 'cds_clusters.txt')
 CD_HIT_EST_CLUSTERS_OUTPUT_FILE = CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE + ".clstr"
-CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE = os.path.join(DATA_DIR, 'cds_clusters_multiple_proteins.txt.clstr')
+CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE = os.path.join(CLUSTERS_DIR, 'cds_clusters_multiple_proteins.txt.clstr')
 
-GENOMIC_STATS_PKL = os.path.join(DATA_DIR, "genomic_stats.pkl")
-PROTEIN_STATS_PKL = os.path.join(DATA_DIR, "protein_stats.pkl")
-CONTIGS_PKL = os.path.join(DATA_DIR, "contigs.pkl")
-PSEUDOGENES_PKL = os.path.join(DATA_DIR, "pseudogenes.pkl")
-TOTAL_CLUSTERS_PKL = os.path.join(DATA_DIR, "total_clusters.pkl")
-CORE_CLUSTERS_PKL = os.path.join(DATA_DIR, "core_clusters.pkl")
-SINGLETON_CLUSTERS_PKL = os.path.join(DATA_DIR, "singleton_clusters.pkl")
-FIRST_STAGE_STATS_PKL = os.path.join(DATA_DIR, "1st_stage_stats.pkl")
-SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_strain_stats.pkl")
-SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_cluster_stats.pkl")
-SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL = os.path.join(DATA_DIR, "2nd_stage_aggregated_cluster_stats.pkl")
+GENOMIC_STATS_PKL = os.path.join(PICKLES_DIR, "genomic_stats.pkl")
+PROTEIN_STATS_PKL = os.path.join(PICKLES_DIR, "protein_stats.pkl")
+CONTIGS_PKL = os.path.join(PICKLES_DIR, "contigs.pkl")
+PSEUDOGENES_PKL = os.path.join(PICKLES_DIR, "pseudogenes.pkl")
+TOTAL_CLUSTERS_PKL = os.path.join(PICKLES_DIR, "total_clusters.pkl")
+CORE_CLUSTERS_PKL = os.path.join(PICKLES_DIR, "core_clusters.pkl")
+SINGLETON_CLUSTERS_PKL = os.path.join(PICKLES_DIR, "singleton_clusters.pkl")
+FIRST_STAGE_STATS_PKL = os.path.join(PICKLES_DIR, "1st_stage_stats.pkl")
+SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_strain_stats.pkl")
+SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_cluster_stats.pkl")
+SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_aggregated_cluster_stats.pkl")
 
 FIRST_STAGE_STATS_CSV = os.path.join(DATA_DIR, "1st_stage_stats.csv")
 SECOND_STAGE_STATS_CSV = os.path.join(DATA_DIR, "2nd_stage_stats.csv")

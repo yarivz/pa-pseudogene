@@ -3,9 +3,12 @@ import logging
 from collections import defaultdict
 import os
 import pandas
+from Bio import SeqIO
+
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN, \
-    CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE
+    CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
+    FASTA_FILE_TYPE, COMBINED_STRAIN_REPS_CDS_PATH, COMBINED_STRAIN_PSEUDOGENES_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -344,3 +347,15 @@ def filter_2nd_stage_clusters_with_multiple_proteins():
             if num_of_proteins > 1:
                 output.write(cluster)
             return
+
+
+def split_2nd_stage_combined_fasta_to_reps_pseudogenes():
+    with open(COMBINED_STRAIN_REPS_CDS_PATH, "w") as reps_cds_file:
+        with open(COMBINED_STRAIN_PSEUDOGENES_PATH, "w") as pseudogenes_file:
+            with open(COMBINED_CDS_FILE_PATH) as cds_file:
+                strain_cds_seq_iter = SeqIO.parse(cds_file, FASTA_FILE_TYPE)
+                for strain_cds_seq in strain_cds_seq_iter:
+                    if "pseudo=true" in strain_cds_seq.description:
+                        SeqIO.write(strain_cds_seq, pseudogenes_file, FASTA_FILE_TYPE)
+                    else:
+                        SeqIO.write(strain_cds_seq, reps_cds_file, FASTA_FILE_TYPE)
