@@ -367,10 +367,8 @@ def get_pseudogenes_from_blast_results():
     with open(BLAST_RESULTS_FILE) as blast_result:
         pseudogene_prefix = "bla"
         for line in blast_result:
-            print(line)
-            if not line.startswith(pseudogene_prefix):
+            if not line.startswith(pseudogene_prefix.string):
                 pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line.lstrip())
-                print("adding seq with hit " + pseudogene_prefix)
                 strain_idx = pseudogene_prefix.group(1)
                 strain_seqs = pseudogenes[strain_idx] if strain_idx in pseudogenes.keys() else []
                 seq_idx = pseudogene_prefix.group(2)
@@ -389,5 +387,4 @@ def get_pseudogenes_without_blast_hits_fasta():
             seq_idx = pseudogene_prefix.group(2)
             strain_seqs = pseudogenes_with_hits[strain_idx] if strain_idx in pseudogenes_with_hits.keys() else None
             if strain_seqs is None or seq_idx not in strain_seqs:
-                print("seq idx: %s\nstrain seqs %s" % (seq_idx, strain_seqs))
                 SeqIO.write(seq, pseudogenes_file, FASTA_FILE_TYPE)
