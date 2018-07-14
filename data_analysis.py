@@ -8,7 +8,8 @@ from Bio import SeqIO
 from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, STRAIN_INDEX_FILE, CLUSTER_STRAIN_PATTERN, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN, \
     CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
-    FASTA_FILE_TYPE, COMBINED_STRAIN_REPS_CDS_PATH, COMBINED_STRAIN_PSEUDOGENES_PATH
+    FASTA_FILE_TYPE, COMBINED_STRAIN_REPS_CDS_PATH, COMBINED_STRAIN_PSEUDOGENES_PATH, BLAST_RESULTS_FILE, \
+    BLAST_PSEUDOGENE_PATTERN, COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH
 
 logger = logging.getLogger(__name__)
 
@@ -359,3 +360,31 @@ def split_2nd_stage_combined_fasta_to_reps_pseudogenes():
                         SeqIO.write(strain_cds_seq, pseudogenes_file, FASTA_FILE_TYPE)
                     else:
                         SeqIO.write(strain_cds_seq, reps_cds_file, FASTA_FILE_TYPE)
+
+
+def get_pseudogenes_from_blast_results():
+    pseudogenes = {}
+    with open(BLAST_RESULTS_FILE) as blast_result:
+        pseudogene_prefix = ""
+        for line in blast_result:
+            if not line.startswith(pseudogene_prefix):
+                pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line)
+                strain_idx = pseudogene_prefix.group(1)
+                strain_seqs = pseudogenes[strain_idx] if strain_idx in pseudogenes.keys() else []
+                seq_idx = pseudogene_prefix.group(2)
+                if seq_idx not in strain_seqs:
+                    strain_seqs.append(seq_idx)
+    return pseudogenes
+
+
+def get_pseudogenes_without_blast_hits_fasta():
+    pseudogenes_with_hits = get_pseudogenes_from_blast_results()
+    all_pseudogenes_iter = SeqIO.parse(open(COMBINED_STRAIN_PSEUDOGENES_PATH), FASTA_FILE_TYPE)
+    with open(COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH, "w") as pseudogenes_file:
+        for seq in all_pseudogenes_iter:
+            pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(seq.description)
+            strain_idx = pseudogene_prefix.group(1)
+            seq_idx = pseudogene_prefix.group(2)
+            strain_seqs = pseudogenes_with_hits[strain_idx] if strain_idx in pseudogenes_with_hits.keys() else None
+            if strain_seqs is None or seq_idx not in strain_seqs:
+                SeqIO.write(seq, pseudogenes_file, FASTA_FILE_TYPE)

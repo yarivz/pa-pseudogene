@@ -50,3 +50,7 @@ SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage
 
 FIRST_STAGE_STATS_CSV = os.path.join(DATA_DIR, "1st_stage_stats.csv")
 SECOND_STAGE_STATS_CSV = os.path.join(DATA_DIR, "2nd_stage_stats.csv")
+
+BLAST_RESULTS_FILE = os.path.join(DATA_DIR, "result_blastn_pseudogenes")
+COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH = os.path.join(DATA_DIR, "combined_strain_pseudogenes_without_blast_hit.fasta")
+BLAST_PSEUDOGENE_PATTERN = re.compile("\[(\d+)\]\[(\d+)\]\[pseudo\]")
