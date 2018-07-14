@@ -144,8 +144,8 @@ def init_args_parser():
                         help='Split 2nd stage combined fasta to representatives and pseudogenes files')
     parser.add_argument('-pnh', '--get_pseudogenes_no_hits_fasta', action="store_true",
                         help='Get pseudogenes without blast hits fasta')
-    parser.add_argument('-in', '--input', nargs=1, help='Get input file')
-    parser.add_argument('-out', '--output', nargs=1, help='Get output file')
+    parser.add_argument('-in', '--input', help='Get input file')
+    parser.add_argument('-out', '--output', help='Get output file')
     return parser
 
 
