@@ -383,6 +383,7 @@ def get_pseudogenes_without_blast_hits_fasta():
     with open(COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH, "w") as pseudogenes_file:
         for seq in all_pseudogenes_iter:
             pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(seq.description)
+            print("seq %s\ndesc %s\nmatch %s" % (seq, seq.description, pseudogene_prefix))
             strain_idx = pseudogene_prefix.group(1)
             seq_idx = pseudogene_prefix.group(2)
             strain_seqs = pseudogenes_with_hits[strain_idx] if strain_idx in pseudogenes_with_hits.keys() else None
