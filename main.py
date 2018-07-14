@@ -14,7 +14,7 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_R
     CD_HIT_EST_CLUSTERS_OUTPUT_FILE, SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL, SECOND_STAGE_STATS_CSV
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
     get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins, \
-    split_2nd_stage_combined_fasta_to_reps_pseudogenes
+    split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -109,6 +109,8 @@ def main():
             filter_2nd_stage_clusters_with_multiple_proteins()
         if args.split_2nd_stage_fasta:
             split_2nd_stage_combined_fasta_to_reps_pseudogenes()
+        if args.get_pseudogenes_no_hits_fasta:
+            get_pseudogenes_without_blast_hits_fasta()
 
         logger.info("Finished work, exiting")
     finally:
@@ -138,6 +140,8 @@ def init_args_parser():
                         help='Filter 2nd stage clusters with multiple proteins')
     parser.add_argument('-sp', '--split_2nd_stage_fasta', action="store_true",
                         help='Split 2nd stage combined fasta to representatives and pseudogenes files')
+    parser.add_argument('-pnh', '--get_pseudogenes_no_hits_fasta', action="store_true",
+                        help='Get pseudogenes without blast hits fasta')
     return parser
 
 
