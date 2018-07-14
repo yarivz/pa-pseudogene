@@ -370,12 +370,12 @@ def get_pseudogenes_from_blast_results():
             if not line.startswith(prefix):
                 pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line.lstrip())
                 prefix = pseudogene_prefix.group()
-                print(prefix)
                 strain_idx = pseudogene_prefix.group(1)
                 strain_seqs = pseudogenes[strain_idx] if strain_idx in pseudogenes.keys() else []
                 seq_idx = pseudogene_prefix.group(2)
                 if seq_idx not in strain_seqs:
                     strain_seqs.append(seq_idx)
+                    pseudogenes[strain_idx] = strain_seqs
     print("found %s pseudogenes in blast results" % len(pseudogenes))
     return pseudogenes
 
