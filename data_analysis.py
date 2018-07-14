@@ -368,7 +368,8 @@ def get_pseudogenes_from_blast_results():
         pseudogene_prefix = ""
         for line in blast_result:
             if not line.startswith(pseudogene_prefix):
-                pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line)
+                pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line.lstrip())
+                print("adding seq with hit " + pseudogene_prefix)
                 strain_idx = pseudogene_prefix.group(1)
                 strain_seqs = pseudogenes[strain_idx] if strain_idx in pseudogenes.keys() else []
                 seq_idx = pseudogene_prefix.group(2)
