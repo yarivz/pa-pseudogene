@@ -365,8 +365,9 @@ def split_2nd_stage_combined_fasta_to_reps_pseudogenes():
 def get_pseudogenes_from_blast_results():
     pseudogenes = {}
     with open(BLAST_RESULTS_FILE) as blast_result:
-        pseudogene_prefix = ""
+        pseudogene_prefix = "bla"
         for line in blast_result:
+            print(line)
             if not line.startswith(pseudogene_prefix):
                 pseudogene_prefix = BLAST_PSEUDOGENE_PATTERN.match(line.lstrip())
                 print("adding seq with hit " + pseudogene_prefix)
