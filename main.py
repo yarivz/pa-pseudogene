@@ -55,9 +55,10 @@ def main():
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.cluster_cds:
-            cds_file = args.cluster_cds
-            if os.path.exists(cds_file):
-                perform_clustering_on_cds(cds_file)
+            input_file = args.input if args.input else COMBINED_CDS_FILE_PATH
+            output_file = args.output if args.output else CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE
+            if os.path.exists(input_file):
+                perform_clustering_on_cds(input_file, output_file)
             else:
                 logger.error("Cannot run clustering without pre-processed cds file")
         if args.protein_stats:
@@ -135,7 +136,7 @@ def init_args_parser():
     parser.add_argument('-g2', '--graph_2nd_stage', action="store_true", help='Plot graphs from 2nd stage strain stats')
     parser.add_argument('-r', '--preprocess_cds', action="store_true",
                         help='Preprocess clustered PA strains proteins representative and pseudogene cds')
-    parser.add_argument('-x', '--cluster_cds', nargs=1, const=COMBINED_CDS_FILE_PATH, default=COMBINED_CDS_FILE_PATH,
+    parser.add_argument('-x', '--cluster_cds', action="store_true",
                         help='Run CD-HIT clustering on preprocessed PA strains cds of representatives and pseudogenes')
     parser.add_argument('-f', '--filter_clusters', action="store_true",
                         help='Filter 2nd stage clusters with multiple proteins')
@@ -143,6 +144,8 @@ def init_args_parser():
                         help='Split 2nd stage combined fasta to representatives and pseudogenes files')
     parser.add_argument('-pnh', '--get_pseudogenes_no_hits_fasta', action="store_true",
                         help='Get pseudogenes without blast hits fasta')
+    parser.add_argument('-in', '--input', nargs=1, help='Get input file')
+    parser.add_argument('-out', '--output', nargs=1, help='Get output file')
     return parser
 
 
@@ -157,11 +160,11 @@ def perform_clustering_on_proteins(aggregated_proteins_file_path):
     return cd_hit_return_code
 
 
-def perform_clustering_on_cds(aggregated_cds_file_path):
+def perform_clustering_on_cds(input_file, output_file):
     """Run the CD-HIT-EST program to perform clustering on the strains representatives and pseudogenes"""
     logger = logging.getLogger()
     logger.info("Running CD-HIT-EST on combined representative and pseudogene cds file to create clustering")
-    cd_hit_est_args = " ".join(["cd-hit-est", "-i", aggregated_cds_file_path, "-o", CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, "-c 0.8",
+    cd_hit_est_args = " ".join(["cd-hit-est", "-i", input_file, "-o", output_file, "-c 0.8",
                    "-n 5", "-M 16000", "-g 1", "-p 1", "-d 30"])
     cd_hit_est_return_code = run(cd_hit_est_args, shell=True).returncode
     logger.info("Finished running CD-HIT with return code %d" % cd_hit_est_return_code)
