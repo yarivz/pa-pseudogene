@@ -55,8 +55,9 @@ def main():
             else:
                 logger.error("Cannot run clustering without pre-processed proteins file")
         if args.cluster_cds:
-            if os.path.exists(COMBINED_CDS_FILE_PATH):
-                perform_clustering_on_cds(COMBINED_CDS_FILE_PATH)
+            cds_file = args.cluster_cds
+            if os.path.exists(cds_file):
+                perform_clustering_on_cds(cds_file)
             else:
                 logger.error("Cannot run clustering without pre-processed cds file")
         if args.protein_stats:
@@ -134,7 +135,7 @@ def init_args_parser():
     parser.add_argument('-g2', '--graph_2nd_stage', action="store_true", help='Plot graphs from 2nd stage strain stats')
     parser.add_argument('-r', '--preprocess_cds', action="store_true",
                         help='Preprocess clustered PA strains proteins representative and pseudogene cds')
-    parser.add_argument('-x', '--cluster_cds', action="store_true",
+    parser.add_argument('-x', '--cluster_cds', action="store_true", nargs='?', const=COMBINED_CDS_FILE_PATH, default=COMBINED_CDS_FILE_PATH,
                         help='Run CD-HIT clustering on preprocessed PA strains cds of representatives and pseudogenes')
     parser.add_argument('-f', '--filter_clusters', action="store_true",
                         help='Filter 2nd stage clusters with multiple proteins')
