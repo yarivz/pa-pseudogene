@@ -52,7 +52,8 @@ class NucleotideCluster(Cluster):
             self.member_protein_seqs[strain_index] = strain_1st_stage_reps
             self.total_protein_len += seq_len
         if is_cluster_rep:
-            self.representative = "Strain: " + strain_index + " Seq: " + seq_index + " Pseudo: " + is_pseudogene
+            print('adding rep')
+            self.representative = "Strain: " + str(strain_index) + " Seq: " + str(seq_index) + " Pseudo: " + str(is_pseudogene)
 
     def has_reps(self):
         return len(self.member_protein_seqs) == 0
@@ -146,7 +147,9 @@ def create_nucleotide_clusters_map(clusters_file):
                 clusters_map[cluster_index] = cur_cluster
             else:
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
-                is_representative = line.endswith("*")
+                is_representative = line.endswith('*')
+                if is_representative:
+                    print('found rep')
                 index_match = CLUSTER_STRAIN_PATTERN.match(line)
                 len_match = CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN.search(line)
                 if not index_match:
