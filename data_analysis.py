@@ -52,7 +52,7 @@ class NucleotideCluster(Cluster):
             self.member_protein_seqs[strain_index] = strain_1st_stage_reps
             self.total_protein_len += seq_len
         if is_cluster_rep:
-            self.representative = "Strain: " + str(strain_index) + " Seq: " + str(seq_index) + " Pseudo: " + str(is_pseudogene)
+            self.representative = "Strain idx: %s, Seq idx: %s, Pseudogene: %r" % (str(strain_index), str(seq_index), bool(is_pseudogene))
 
     def has_reps(self):
         return len(self.member_protein_seqs) == 0
