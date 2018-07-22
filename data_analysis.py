@@ -25,6 +25,9 @@ class Cluster:
     def get_cluster_strains_num(self):
         return len(self.member_strains.keys())
 
+    def get_cluster_proteins_num(self):
+        return sum(self.member_strains.values())
+
 
 class NucleotideCluster(Cluster):
     def __init__(self, index):
@@ -33,8 +36,9 @@ class NucleotideCluster(Cluster):
         self.member_protein_seqs = {}
         self.total_protein_len = 0
         self.total_pseudogene_len = 0
+        self.representative = ""
 
-    def add_nucleotide(self, strain_index, seq_index, seq_len, is_pseudogene):
+    def add_nucleotide(self, strain_index, seq_index, seq_len, is_pseudogene, is_cluster_rep):
         if is_pseudogene:
             strain_pseudogenes = self.member_pseudogenes[
                 strain_index] if strain_index in self.member_pseudogenes.keys() else []
@@ -47,6 +51,8 @@ class NucleotideCluster(Cluster):
             strain_1st_stage_reps.append(seq_index)
             self.member_protein_seqs[strain_index] = strain_1st_stage_reps
             self.total_protein_len += seq_len
+        if is_cluster_rep:
+            self.representative = "Strain: " + strain_index + " Seq: " + seq_index + " Pseudo: " + is_pseudogene
 
     def has_reps(self):
         return len(self.member_protein_seqs) == 0
@@ -140,6 +146,7 @@ def create_nucleotide_clusters_map(clusters_file):
                 clusters_map[cluster_index] = cur_cluster
             else:
                 is_pseudogene = CLUSTER_PSEUDOGENE_PATTERN.search(line)
+                is_representative = line.endswith("*")
                 index_match = CLUSTER_STRAIN_PATTERN.match(line)
                 len_match = CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN.search(line)
                 if not index_match:
@@ -150,7 +157,7 @@ def create_nucleotide_clusters_map(clusters_file):
                 seq_index = int(index_match.group(2))
                 seq_len = int(len_match.group(1))
                 cur_cluster.add_strain(strain_index)
-                cur_cluster.add_nucleotide(strain_index, seq_index, seq_len, is_pseudogene)
+                cur_cluster.add_nucleotide(strain_index, seq_index, seq_len, is_pseudogene, is_representative)
                 cur_strain = strains_map[strain_index] if strain_index in strains_map.keys() else Strain(strain_index)
                 cur_strain.add_cluster(cur_cluster)
                 strains_map[strain_index] = cur_strain
@@ -293,12 +300,15 @@ def get_1st_stage_strains_per_clusters_stats():
 def get_2nd_stage_stats_per_cluster():
     logger.info("Creating 2nd stage strains & clusters maps from CD-HIT-EST output")
     type1 = type2 = type3 = type4 = 0
+    first_stage_strain_seq_cluster_map, first_stage_clusters_map = create_1st_stage_sequences_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
     second_stage_strains_map, second_stage_clusters_map = create_nucleotide_clusters_map(CD_HIT_EST_CLUSTERS_OUTPUT_FILE)
     total_clusters_count = len(second_stage_clusters_map.keys())
     clusters_df = pandas.DataFrame(index=range(total_clusters_count), columns=('protein_seqs', 'strains_of_protein_seqs',
                                                                                'pseudogenes', 'strains_of_pseudogenes',
                                                                                'avg_protein_len', 'avg_pseudogene_len',
-                                                                               'cluster_type'))
+                                                                               'cluster_type', 'representative',
+                                                                               'strains_in_rep_1st_stage_cluster',
+                                                                               'proteins_in_rep_1st_stage_cluster'))
     for cluster in second_stage_clusters_map.values():
         clusters_df.loc[cluster.index]['protein_seqs'] = len([seq for strain_proteins in cluster.member_protein_seqs.values() for seq in strain_proteins])
         clusters_df.loc[cluster.index]['strains_of_protein_seqs'] = len(cluster.member_protein_seqs.keys())
@@ -313,6 +323,11 @@ def get_2nd_stage_stats_per_cluster():
             else:
                 cluster_type = 3
                 type3 += 1
+            [(representative_strain_index, representative_seq_index)] = cluster.member_protein_seqs.items()
+            representative_cluster_id = first_stage_strain_seq_cluster_map[representative_strain_index].seq_clusters[representative_seq_index[0]]
+            representative_cluster = first_stage_clusters_map[representative_cluster_id]
+            clusters_df.loc[cluster.index]['strains_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_strains_num()
+            clusters_df.loc[cluster.index]['proteins_in_rep_1st_stage_cluster'] = representative_cluster.get_cluster_proteins_num()
         elif clusters_df.loc[cluster.index]['protein_seqs'] > 1:
             cluster_type = 4
             type4 += 1
@@ -320,6 +335,7 @@ def get_2nd_stage_stats_per_cluster():
             cluster_type = 2
             type2 += 1
         clusters_df.loc[cluster.index]['cluster_type'] = cluster_type
+        clusters_df.loc[cluster.index]['representative'] = cluster.representative
     logger.info("Cluster type amounts:")
     logger.info("Type 1 (1 protein + pseudogenes): %d" % type1)
     logger.info("Type 2 (0 proteins + pseudogenes): %d" % type2)
