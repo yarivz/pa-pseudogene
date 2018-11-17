@@ -379,7 +379,7 @@ def get_core_clusters():
         CD_HIT_CLUSTERS_OUTPUT_FILE)
     total_strains_count = len(first_stage_strain_seq_cluster_map)
     core_clusters_multiple_strain_seqs = {}
-    core_clusters = {ind: cluster for (ind, cluster) in first_stage_clusters_map if cluster.get_cluster_strains_num() / total_strains_count >= 0.9}
+    core_clusters = {ind: cluster for (ind, cluster) in first_stage_clusters_map.items() if cluster.get_cluster_strains_num() / total_strains_count >= 0.9}
     for cluster in core_clusters:
         if not all(i == 1 for i in cluster.member_strains.values()):
             core_clusters_multiple_strain_seqs[cluster.index] = core_clusters.pop(cluster.index)
