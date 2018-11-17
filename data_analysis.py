@@ -184,41 +184,6 @@ def get_strain_pseudogenes(strain_cds_file):
     return genes, pseudogenes
 
 
-# def get_genomic_stats_per_strain():
-#     genomic_stats = {}
-#     contigs_to_strains = []
-#     pseudogenes_to_strains = []
-#     for strain_dir in os.listdir(STRAINS_DIR):
-#         strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
-#         cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
-#         genomic_file_name = [f for f in strain_dir_files if GENOMIC_PATTERN in f and CDS_FROM_GENOMIC_PATTERN not in f][0]
-#         cds_file = strain_index_file = genomic_file = None
-#         try:
-#             strain_index_file = open(os.path.join(STRAINS_DIR, strain_dir, STRAIN_INDEX_FILE))
-#             strain_index = int(strain_index_file.readline())
-#             if genomic_file_name.endswith('gz'):
-#                 genomic_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, genomic_file_name), 'rt')
-#             else:
-#                 genomic_file = open(os.path.join(STRAINS_DIR, strain_dir, genomic_file_name))
-#             if cds_file_name.endswith('gz'):
-#                 cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
-#             else:
-#                 cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
-#             strain_contigs = get_strain_contigs(genomic_file)
-#             contigs_to_strains.append(strain_contigs)
-#             _, strain_pseudogenes = get_strain_pseudogenes(cds_file)
-#             pseudogenes_to_strains.append(strain_pseudogenes)
-#             genomic_stats[strain_index] = "Contigs: " + str(strain_contigs) + ", Pseudogenes: " + str(strain_pseudogenes)
-#         finally:
-#             if genomic_file is not None:
-#                 genomic_file.close()
-#             if cds_file is not None:
-#                 cds_file.close()
-#             if strain_index_file is not None:
-#                 strain_index_file.close()
-#     return genomic_stats, contigs_to_strains, pseudogenes_to_strains
-
-
 def get_1st_stage_stats_per_strain():
     strains_map, _, total_strains_count, total_core_clusters = create_strains_clusters_map(CD_HIT_CLUSTERS_OUTPUT_FILE)
     df = pandas.DataFrame(index=range(total_strains_count), columns=('strain_name', 'total_clusters', 'core_clusters', 'missing_core', 'singletons', 'contigs', 'pseudogenes', 'genes'))
@@ -407,3 +372,21 @@ def get_pseudogenes_without_blast_hits_fasta():
             strain_seqs = pseudogenes_with_hits[strain_idx] if strain_idx in pseudogenes_with_hits.keys() else None
             if strain_seqs is None or seq_idx not in strain_seqs:
                 SeqIO.write(seq, pseudogenes_file, FASTA_FILE_TYPE)
+
+
+def get_core_clusters():
+    first_stage_strain_seq_cluster_map, first_stage_clusters_map = create_1st_stage_sequences_clusters_map(
+        CD_HIT_CLUSTERS_OUTPUT_FILE)
+    total_strains_count = len(first_stage_strain_seq_cluster_map)
+    core_clusters_multiple_strain_seqs = {}
+    core_clusters = [c for c in first_stage_clusters_map.values() if c.get_cluster_strains_num() / total_strains_count >= 0.9]
+    for cluster in core_clusters:
+        if not all(i == 1 for i in cluster.member_strains.values()):
+            core_clusters_multiple_strain_seqs[cluster.index] = core_clusters.pop(cluster.index)
+    for cluster in core_clusters_multiple_strain_seqs:
+        for strain in cluster.member_strains:
+            if cluster.member_strains[strain] > 1:
+                cluster.member_strains.pop(strain)
+        if cluster.get_cluster_strains_num() / total_strains_count < 0.9:
+            core_clusters_multiple_strain_seqs.pop(cluster.index)
+    return core_clusters, core_clusters_multiple_strain_seqs

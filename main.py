@@ -14,7 +14,7 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_R
     CD_HIT_EST_CLUSTERS_OUTPUT_FILE, SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL, SECOND_STAGE_STATS_CSV
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
     get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins, \
-    split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta
+    split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta, get_core_clusters
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -113,6 +113,10 @@ def main():
             split_2nd_stage_combined_fasta_to_reps_pseudogenes()
         if args.get_pseudogenes_no_hits_fasta:
             get_pseudogenes_without_blast_hits_fasta()
+        if args.get_core_clusters_nums:
+            core_clusters, core_clusters_with_multiple_strain_seqs = get_core_clusters()
+            logger.info("Core clusters without multiple strain appearances: %d" % len(core_clusters))
+            logger.info("Core clusters with multiple strain appearances: %d" % len(core_clusters_with_multiple_strain_seqs))
 
         logger.info("Finished work, exiting")
     finally:
@@ -144,6 +148,8 @@ def init_args_parser():
                         help='Split 2nd stage combined fasta to representatives and pseudogenes files')
     parser.add_argument('-pnh', '--get_pseudogenes_no_hits_fasta', action="store_true",
                         help='Get pseudogenes without blast hits fasta')
+    parser.add_argument('-ccn', '--get_core_clusters_nums', action="store_true",
+                        help='Get core cluster numbers')
     parser.add_argument('-in', '--input', help='Get input file')
     parser.add_argument('-out', '--output', help='Get output file')
     return parser
