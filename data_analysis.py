@@ -382,7 +382,9 @@ def get_core_clusters():
     core_clusters = {ind: cluster for (ind, cluster) in first_stage_clusters_map.items() if cluster.get_cluster_strains_num() / total_strains_count >= 0.9}
     for cluster in core_clusters.values():
         if not all(i == 1 for i in cluster.member_strains.values()):
-            core_clusters_multiple_strain_seqs[cluster.index] = core_clusters.pop(cluster.index)
+            core_clusters_multiple_strain_seqs[cluster.index] = core_clusters[cluster.index]
+    for index in core_clusters_multiple_strain_seqs.keys():
+        core_clusters.pop(index)
     for cluster in core_clusters_multiple_strain_seqs.values():
         for strain in cluster.member_strains.keys():
             if cluster.member_strains[strain] > 1:
