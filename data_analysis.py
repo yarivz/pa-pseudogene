@@ -379,6 +379,7 @@ def get_core_clusters():
         CD_HIT_CLUSTERS_OUTPUT_FILE)
     total_strains_count = len(first_stage_strain_seq_cluster_map)
     core_clusters_multiple_strain_seqs = {}
+    clusters_to_remove = []
     core_clusters = {ind: cluster for (ind, cluster) in first_stage_clusters_map.items() if cluster.get_cluster_strains_num() / total_strains_count >= 0.9}
     for cluster in core_clusters.values():
         if not all(i == 1 for i in cluster.member_strains.values()):
@@ -390,5 +391,7 @@ def get_core_clusters():
             if cluster.member_strains[strain] > 1:
                 cluster.member_strains.pop(strain)
         if cluster.get_cluster_strains_num() / total_strains_count < 0.9:
-            core_clusters_multiple_strain_seqs.pop(cluster.index)
+            clusters_to_remove.append(cluster.index)
+    for cluster in clusters_to_remove:
+        core_clusters_multiple_strain_seqs.pop(cluster.index)
     return core_clusters, core_clusters_multiple_strain_seqs
