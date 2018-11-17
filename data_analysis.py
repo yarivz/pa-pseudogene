@@ -392,6 +392,6 @@ def get_core_clusters():
             cluster.member_strains.pop(strain)
         if cluster.get_cluster_strains_num() / total_strains_count < 0.9:
             clusters_to_remove.append(cluster.index)
-    for cluster in clusters_to_remove:
-        core_clusters_multiple_strain_seqs.pop(cluster.index)
+    for cluster_index in clusters_to_remove:
+        core_clusters_multiple_strain_seqs.pop(cluster_index)
     return core_clusters, core_clusters_multiple_strain_seqs
