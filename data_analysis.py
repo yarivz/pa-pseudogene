@@ -406,7 +406,7 @@ def get_core_clusters():
     return core_clusters, core_clusters_multiple_strain_seqs
 
 
-def convert_protein_clusters_to_nucleotide_fasta_files():
+def export_protein_clusters_to_nucleotide_fasta_files():
     import pickle
     downloaded_strains = os.listdir(STRAINS_DIR)
     if os.path.exists(PROTEIN_CORE_CLUSTERS_PKL):

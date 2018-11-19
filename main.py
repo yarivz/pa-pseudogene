@@ -15,7 +15,7 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_R
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
     get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins, \
     split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta, get_core_clusters, \
-    convert_protein_clusters_to_nucleotide_fasta_files
+    export_protein_clusters_to_nucleotide_fasta_files
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -119,7 +119,7 @@ def main():
             logger.info("Core clusters without multiple strain appearances: %d" % len(core_clusters))
             logger.info("Core clusters with multiple strain appearances: %d" % len(core_clusters_with_multiple_strain_seqs))
         if args.export_protein_core_clusters:
-            convert_protein_clusters_to_nucleotide_fasta_files()
+            export_protein_clusters_to_nucleotide_fasta_files()
 
         logger.info("Finished work, exiting")
     finally:
