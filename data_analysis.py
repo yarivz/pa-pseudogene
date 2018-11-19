@@ -9,7 +9,9 @@ from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, ST
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTERS_OUTPUT_FILE, CLUSTER_PSEUDOGENE_PATTERN, \
     CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
     FASTA_FILE_TYPE, COMBINED_STRAIN_REPS_CDS_PATH, COMBINED_STRAIN_PSEUDOGENES_PATH, BLAST_RESULTS_FILE, \
-    BLAST_PSEUDOGENE_PATTERN, COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH
+    BLAST_PSEUDOGENE_PATTERN, COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH, CLUSTERS_NT_SEQS_DIR, \
+    PROTEIN_CORE_CLUSTERS_PKL
+from nucleotide_preprocessor import get_strain_index
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +20,15 @@ class Cluster:
     def __init__(self, index):
         self.index = index
         self.member_strains = defaultdict(int)
+        self.member_strains_seqs = {}
 
     def add_strain(self, strain_index):
         self.member_strains[strain_index] += 1
+
+    def add_strain_seq(self, strain_index, seq_index):
+        strain_seqs = self.member_strains_seqs[strain_index] if strain_index in self.member_strains_seqs.keys() else []
+        strain_seqs.append(seq_index)
+        self.member_strains_seqs[strain_index] = strain_seqs
 
     def get_cluster_strains_num(self):
         return len(self.member_strains.keys())
@@ -128,6 +136,7 @@ def create_1st_stage_sequences_clusters_map(clusters_file):
                 strain_index = int(match.group(1))
                 seq_index = int(match.group(2))
                 cur_cluster.add_strain(strain_index)
+                cur_cluster.add_strain_seq(strain_index, seq_index)
                 cur_strain = strains_map[strain_index] if strain_index in strains_map.keys() else Strain(strain_index)
                 cur_strain.add_seq_cluster(seq_index, cluster_index)
                 strains_map[strain_index] = cur_strain
@@ -395,3 +404,51 @@ def get_core_clusters():
     for cluster_index in clusters_to_remove:
         core_clusters_multiple_strain_seqs.pop(cluster_index)
     return core_clusters, core_clusters_multiple_strain_seqs
+
+
+def convert_protein_clusters_to_nucleotide_fasta_files():
+    import pickle
+    downloaded_strains = os.listdir(STRAINS_DIR)
+    if os.path.exists(PROTEIN_CORE_CLUSTERS_PKL):
+        logger.info("Loading protein core clusters from pickle")
+        with open("PROTEIN_CORE_CLUSTERS_PKL", "rb") as f:
+            core_clusters = pickle.load(f)
+    else:
+        logger.info("Generating protein core clusters")
+        core_clusters, _ = get_core_clusters()
+        with open("PROTEIN_CORE_CLUSTERS_PKL", "wb") as f:
+            pickle.dump(core_clusters, f)
+    if not os.path.exists(CLUSTERS_NT_SEQS_DIR):
+        os.makedirs(CLUSTERS_NT_SEQS_DIR)
+
+    for strain_dir in downloaded_strains:
+        strain_index = get_strain_index(strain_dir)
+        strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
+        cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
+        if cds_file_name is None:
+            raise RuntimeError("Failed to find a cds file for strain %s" % str(strain_dir))
+        if cds_file_name.endswith('gz'):
+            cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
+        else:
+            cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
+        strain_cds = list(SeqIO.parse(cds_file, FASTA_FILE_TYPE))
+        logger.info("Parsing strain %s index %d" % (str(strain_dir), strain_index))
+        for cluster in core_clusters.values():
+            if strain_index in cluster.member_strains_seqs.keys():
+                strain_protein_seq_index = cluster.member_strains_seqs[strain_index][0]
+                strain_protein_seq = strain_cds[strain_protein_seq_index - 1]
+                strain_protein_seq.description = "[" + str(strain_index) + "][" + str(strain_protein_seq_index) + "]" + strain_protein_seq.description
+                cluster.member_strains_seqs[strain_index][0] = strain_protein_seq
+
+        if cds_file is not None:
+            cds_file.close()
+
+    for cluster in core_clusters.values():
+        logger.info("Saving cluster %d to file" % cluster.index)
+        cluster_protein_nts_file_path = os.path.join(CLUSTERS_NT_SEQS_DIR, "cluster_" + str(cluster.index))
+        cluster_protein_nts_file = open(cluster_protein_nts_file_path, "a+")
+        cluster_seqs = [seq for idx, seq in sorted(cluster.member_strains_seqs.items())]
+        SeqIO.write(cluster_seqs, cluster_protein_nts_file, FASTA_FILE_TYPE)
+        cluster_protein_nts_file.close()
+
+

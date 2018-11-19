@@ -14,7 +14,8 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, CD_HIT_CLUSTER_R
     CD_HIT_EST_CLUSTERS_OUTPUT_FILE, SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL, SECOND_STAGE_STATS_CSV
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
     get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins, \
-    split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta, get_core_clusters
+    split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta, get_core_clusters, \
+    convert_protein_clusters_to_nucleotide_fasta_files
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -117,6 +118,8 @@ def main():
             core_clusters, core_clusters_with_multiple_strain_seqs = get_core_clusters()
             logger.info("Core clusters without multiple strain appearances: %d" % len(core_clusters))
             logger.info("Core clusters with multiple strain appearances: %d" % len(core_clusters_with_multiple_strain_seqs))
+        if args.export_protein_core_clusters:
+            convert_protein_clusters_to_nucleotide_fasta_files()
 
         logger.info("Finished work, exiting")
     finally:
@@ -150,6 +153,8 @@ def init_args_parser():
                         help='Get pseudogenes without blast hits fasta')
     parser.add_argument('-ccn', '--get_core_clusters_nums', action="store_true",
                         help='Get core cluster numbers')
+    parser.add_argument('-epcc', '--export_protein_core_clusters', action="store_true",
+                        help='Export protein core clusters to fasta files')
     parser.add_argument('-in', '--input', help='Get input file')
     parser.add_argument('-out', '--output', help='Get output file')
     return parser

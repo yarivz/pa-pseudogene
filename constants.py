@@ -5,6 +5,7 @@ DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
 PICKLES_DIR = DATA_DIR + os.sep + "pickles"
 CLUSTERS_DIR = DATA_DIR + os.sep + "clusters"
+CLUSTERS_NT_SEQS_DIR = DATA_DIR + os.sep + "protein_clusters_nt_seqs"
 FIRST_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "1st_stage_graphs"
 SECOND_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "2nd_stage_graphs"
 
@@ -47,6 +48,7 @@ FIRST_STAGE_STATS_PKL = os.path.join(PICKLES_DIR, "1st_stage_stats.pkl")
 SECOND_STAGE_STRAIN_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_strain_stats.pkl")
 SECOND_STAGE_CLUSTER_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_cluster_stats.pkl")
 SECOND_STAGE_AGGREGATED_CLUSTER_STATS_PKL = os.path.join(PICKLES_DIR, "2nd_stage_aggregated_cluster_stats.pkl")
+PROTEIN_CORE_CLUSTERS_PKL = os.path.join(PICKLES_DIR, "protein_core_clusters.pkl")
 
 FIRST_STAGE_STATS_CSV = os.path.join(DATA_DIR, "1st_stage_stats.csv")
 SECOND_STAGE_STATS_CSV = os.path.join(DATA_DIR, "2nd_stage_stats.csv")
