@@ -411,12 +411,12 @@ def export_protein_clusters_to_nucleotide_fasta_files():
     downloaded_strains = os.listdir(STRAINS_DIR)
     if os.path.exists(PROTEIN_CORE_CLUSTERS_PKL):
         logger.info("Loading protein core clusters from pickle")
-        with open("PROTEIN_CORE_CLUSTERS_PKL", "rb") as f:
+        with open(PROTEIN_CORE_CLUSTERS_PKL, "rb") as f:
             core_clusters = pickle.load(f)
     else:
         logger.info("Generating protein core clusters")
         core_clusters, _ = get_core_clusters()
-        with open("PROTEIN_CORE_CLUSTERS_PKL", "wb") as f:
+        with open(PROTEIN_CORE_CLUSTERS_PKL, "wb") as f:
             pickle.dump(core_clusters, f)
     if not os.path.exists(CLUSTERS_NT_SEQS_DIR):
         os.makedirs(CLUSTERS_NT_SEQS_DIR)
@@ -438,7 +438,7 @@ def export_protein_clusters_to_nucleotide_fasta_files():
                 strain_protein_seq_index = cluster.member_strains_seqs[strain_index][0]
                 strain_protein_seq = strain_cds[strain_protein_seq_index - 1]
                 strain_protein_seq.description = "[" + str(strain_index) + "][" + str(strain_protein_seq_index) + "]" + strain_protein_seq.description
-                cluster.member_strains_seqs[strain_index][0] = strain_protein_seq
+                cluster.member_strains_seqs[strain_index] = strain_protein_seq
 
         if cds_file is not None:
             cds_file.close()
