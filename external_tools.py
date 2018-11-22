@@ -38,12 +38,12 @@ def perform_alignment_on_core_clusters():
         os.makedirs(CLUSTERS_ALIGNMENTS_DIR)
 
     for cluster_file in os.listdir(CLUSTERS_NT_SEQS_DIR):
-        cluster_alignment_file = cluster_file + "_alignment"
+        cluster_alignment_filename = cluster_file + "_alignment"
+        cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
         mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
-        mafft_return_code = run(mafft_args, shell=True,
-                                stdout=open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file)),
-                                stderr=open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file))).returncode
+        mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file, stderr=cluster_alignment_file).returncode
         logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
+        cluster_alignment_file.close()
     logger.info("Finished running MAFFT for all clusters")
 
 
