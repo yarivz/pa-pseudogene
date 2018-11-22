@@ -6,6 +6,8 @@ STRAINS_DIR = DATA_DIR + os.sep + "strains"
 PICKLES_DIR = DATA_DIR + os.sep + "pickles"
 CLUSTERS_DIR = DATA_DIR + os.sep + "clusters"
 CLUSTERS_NT_SEQS_DIR = DATA_DIR + os.sep + "protein_clusters_nt_seqs"
+CLUSTERS_ALIGNMENTS_DIR = DATA_DIR + os.sep + "cluster_alignments"
+CLUSTERS_PRUNED_ALIGNMENTS_DIR = DATA_DIR + os.sep + "cluster_alignments_pruned"
 FIRST_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "1st_stage_graphs"
 SECOND_STAGE_GRAPHS_DIR = os.getcwd() + os.sep + "2nd_stage_graphs"
 
