@@ -41,8 +41,8 @@ def perform_alignment_on_core_clusters():
         cluster_alignment_file = cluster_file + "_alignment"
         mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
         mafft_return_code = run(mafft_args, shell=True,
-                                stdout=os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file),
-                                stderr=os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file)).returncode
+                                stdout=open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file)),
+                                stderr=open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_file))).returncode
         logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
     logger.info("Finished running MAFFT for all clusters")
 
