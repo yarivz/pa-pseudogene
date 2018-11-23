@@ -122,9 +122,7 @@ def main():
         if args.export_protein_core_clusters:
             export_protein_clusters_to_nucleotide_fasta_files()
         if args.perform_alignment_on_clusters:
-            perform_alignment_on_core_clusters()
-        if args.perform_pruning_on_alignments:
-            perform_pruning_on_alignments()
+            perform_alignment_on_core_clusters(log_queue)
 
         logger.info("Finished work, exiting")
     finally:
@@ -161,9 +159,7 @@ def init_args_parser():
     parser.add_argument('-epcc', '--export_protein_core_clusters', action="store_true",
                         help='Export protein core clusters to fasta files')
     parser.add_argument('-paoc', '--perform_alignment_on_clusters', action="store_true",
-                        help='Perform MAFFT alignment on core clusters fasta files')
-    parser.add_argument('-ppoa', '--perform_pruning_on_alignments', action="store_true",
-                        help='Perform Gblocks pruning on MAFFT alignments')
+                        help='Perform MAFFT alignment & Gblocks pruning on core clusters fasta files')
     parser.add_argument('-in', '--input', help='Get input file')
     parser.add_argument('-out', '--output', help='Get output file')
     return parser
