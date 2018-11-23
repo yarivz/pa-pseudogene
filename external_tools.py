@@ -3,8 +3,10 @@ import multiprocessing
 import os
 from subprocess import run
 
+from Bio import SeqIO
+
 from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLUSTERS_ALIGNMENTS_DIR, STRAINS_DIR, \
-    NUMBER_OF_PROCESSES
+    NUMBER_OF_PROCESSES, FASTA_FILE_TYPE
 from logging_config import worker_configurer
 
 
@@ -71,14 +73,23 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
         if cluster_file is None:
             job_queue.put(None)
             break
+        cluster_file_short_seq_names = cluster_file + "_short_names"
+        logger.info("Shortening seq names for %s" % cluster_file)
+        with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
+            cluster_cds = SeqIO.parse(f1, FASTA_FILE_TYPE)
+            for cds in cluster_cds:
+                cds.description = cds.description.split(' ')[1]
+            with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
+                SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
+
         logger.info("Running MAFFT for %s" % cluster_file)
         cluster_alignment_filename = cluster_file + "_alignment"
-        if not os.path.exists(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename)):
-            cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
-            mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
-            mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file).returncode
-            cluster_alignment_file.close()
-            logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
+        cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
+        mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names)])
+        mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file).returncode
+        logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
+        cluster_alignment_file.close()
+
         logger.info("Running GBlocks for %s" % cluster_file)
         gblocks_args = " ".join(["Gblocks", os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), "-t=d", "-b5=a"])
         gblocks_return_code = run(gblocks_args, shell=True).returncode
