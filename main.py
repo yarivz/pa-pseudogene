@@ -7,7 +7,7 @@ import pandas
 
 from data_visualization import create_1st_stage_charts, create_2nd_stage_charts
 from external_tools import perform_clustering_on_proteins, perform_clustering_on_cds, \
-    perform_alignment_on_core_clusters, perform_pruning_on_alignments
+    perform_alignment_on_core_clusters
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
