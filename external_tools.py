@@ -77,14 +77,15 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
         alignment_stdout = open("alignment_stdout.log", "w")
         alignment_stderr = open("alignment_stderr.log", "w")
         cluster_alignment_filename = cluster_file + "_alignment"
-        cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
-        mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
-        mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file, stderr=alignment_stderr).returncode
-        logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
-        cluster_alignment_file.close()
+        if not os.path.exists(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename)):
+            cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
+            mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
+            mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file, stderr=alignment_stderr).returncode
+            logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
+            cluster_alignment_file.close()
 
         logger.info("Running GBlocks for %s" % cluster_file)
-        gblocks_args = " ".join(["Gblocks", os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), "-t=d", "-b5=a"])
+        gblocks_args = " ".join(["Gblocks", os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), "-t=d", "-b5=a", "-p=n"])
         gblocks_return_code = run(gblocks_args, shell=True, stdout=alignment_stdout, stderr=alignment_stderr).returncode
         logger.info(
             "Finished running Gblocks for alignment %s with return code %d" % (cluster_alignment_filename, gblocks_return_code))
