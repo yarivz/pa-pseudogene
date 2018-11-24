@@ -74,15 +74,6 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
             job_queue.put(None)
             break
         cluster_file_short_seq_names = cluster_file + "_short_names"
-        logger.info("Shortening seq names for %s" % cluster_file)
-        with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
-            cluster_cds = list(SeqIO.parse(f1, FASTA_FILE_TYPE))
-            for cds in cluster_cds:
-                cds.id = cds.description.split(' ')[1]
-                cds.description = ''
-            with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
-                SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
-
         logger.info("Running MAFFT for %s" % cluster_file)
         cluster_alignment_filename = cluster_file + "_alignment"
         cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
