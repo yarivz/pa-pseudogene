@@ -456,10 +456,17 @@ def shorten_seq_names_in_clusters():
     for cluster_file in os.listdir(CLUSTERS_NT_SEQS_DIR):
         cluster_file_short_seq_names = cluster_file + "_short_names"
         logger.info("Shortening seq names for %s" % cluster_file)
-        with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
-            cluster_cds = list(SeqIO.parse(f1, FASTA_FILE_TYPE))
-            for cds in cluster_cds:
-                cds.id = cds.description.split(' ')[1]
-                cds.description = ''
-            with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
-                SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
+        if not os.path.exists(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names)):
+            with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
+                cluster_cds = list(SeqIO.parse(f1, FASTA_FILE_TYPE))
+                for cds in cluster_cds:
+                    if len(cds.description.split(' ')) < 2:
+                        print("seq description weird:")
+                        print(cluster_file)
+                        print(cds.id)
+                        print(cds.description)
+                    else:
+                        cds.id = cds.description.split(' ')[1]
+                        cds.description = ''
+                with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
+                    SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
