@@ -460,12 +460,6 @@ def shorten_seq_names_in_clusters():
             with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
                 cluster_cds = list(SeqIO.parse(f1, FASTA_FILE_TYPE))
                 for cds in cluster_cds:
-                    if len(cds.description.split(' ')) < 2:
-                        print("seq description weird:")
-                        print(cluster_file)
-                        print(cds.id)
-                        print(cds.description)
-                    else:
                         cds.id = cds.description.split(' ')[1]
                         cds.description = ''
                 with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:

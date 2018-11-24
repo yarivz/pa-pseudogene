@@ -73,11 +73,10 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
         if cluster_file is None:
             job_queue.put(None)
             break
-        cluster_file_short_seq_names = cluster_file + "_short_names"
         logger.info("Running MAFFT for %s" % cluster_file)
         cluster_alignment_filename = cluster_file + "_alignment"
         cluster_alignment_file = open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), 'w')
-        mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names)])
+        mafft_args = " ".join(["mafft", "--auto", os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file)])
         mafft_return_code = run(mafft_args, shell=True, stdout=cluster_alignment_file).returncode
         logger.info("Finished running MAFFT for %s with return code %d" % (cluster_file, mafft_return_code))
         cluster_alignment_file.close()
