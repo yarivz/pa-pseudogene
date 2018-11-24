@@ -76,9 +76,10 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
         cluster_file_short_seq_names = cluster_file + "_short_names"
         logger.info("Shortening seq names for %s" % cluster_file)
         with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file), "r") as f1:
-            cluster_cds = SeqIO.parse(f1, FASTA_FILE_TYPE)
+            cluster_cds = list(SeqIO.parse(f1, FASTA_FILE_TYPE))
             for cds in cluster_cds:
-                cds.description = cds.description.split(' ')[1]
+                cds.id = cds.description.split(' ')[1]
+                cds.description = ''
             with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
                 SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
 
@@ -92,7 +93,7 @@ def perform_alignment_and_pruning(worker_id, job_queue, configurer, log_queue):
 
         logger.info("Running GBlocks for %s" % cluster_file)
         gblocks_args = " ".join(["Gblocks", os.path.join(CLUSTERS_ALIGNMENTS_DIR, cluster_alignment_filename), "-t=d", "-b5=a"])
-        gblocks_return_code = run(gblocks_args, shell=True).returncode
+        gblocks_return_code = run(gblocks_args, shell=True, stdout="/dev/null").returncode
         logger.info(
             "Finished running Gblocks for alignment %s with return code %d" % (cluster_alignment_filename, gblocks_return_code))
 
