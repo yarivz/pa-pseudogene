@@ -154,38 +154,37 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
             break
         logger.info("Editing alignment %s" % alignment_file)
         alignment = AlignIO.read(open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, alignment_file), "r"), FASTA_FILE_TYPE)
-        alignment_without_invariants = None
+        edited_alignment = None
         for col_idx in range(alignment.get_alignment_length()):
             col = alignment[:, col_idx]
             if not all(c == col[0] for c in col):
-                if not alignment_without_invariants:
-                    alignment_without_invariants = col
+                if not edited_alignment:
+                    edited_alignment = col
                 else:
-                    alignment_without_invariants += col
-        alignment_with_padding = alignment_without_invariants[:]
-        alignment_seq_len = len(alignment_with_padding[0].seq)
+                    edited_alignment += col
+        alignment_seq_len = len(edited_alignment[0].seq)
         logger.debug("alignment_seq_len = %d" % alignment_seq_len)
         strain_idx = 0
         while strain_idx < STRAINS_COUNT:
             logger.info("in while - strain_idx = %d" % strain_idx)
-            if len(alignment_with_padding) > strain_idx:
-                seq = alignment_with_padding[strain_idx]
+            if len(edited_alignment) > strain_idx:
+                seq = edited_alignment[strain_idx]
                 seq_strain_idx = int(CLUSTER_STRAIN_PATTERN.match(seq.id).group(1))
                 logger.info("checking if strain idx %d < seq_strain_idx %d" % (strain_idx, seq_strain_idx))
                 if strain_idx < seq_strain_idx:
                     for i in range(seq_strain_idx - strain_idx):
                         logger.info("adding padded seq at idx %d" % strain_idx + i)
-                        alignment_with_padding.insert(strain_idx + i, PadSeqRecord(strain_idx + i, alignment_seq_len))
+                        edited_alignment.insert(strain_idx + i, PadSeqRecord(strain_idx + i, alignment_seq_len))
                     strain_idx += (seq_strain_idx - strain_idx + 1)
                     continue
                 strain_idx += 1
             else:
                 logger.info("adding padded seq at end of alignment list")
-                alignment_with_padding.insert(strain_idx, PadSeqRecord(strain_idx, alignment_seq_len))
+                edited_alignment.insert(strain_idx, PadSeqRecord(strain_idx, alignment_seq_len))
                 strain_idx += 1
         alignment_file_edited = os.path.join(ALIGNMENTS_FOR_TREE_DIR, alignment_file)
         logger.info("Finished padding alignment - writing to file %s" % alignment_file_edited)
-        AlignIO.write(alignment_with_padding, open(alignment_file_edited, "w"), FASTA_FILE_TYPE)
+        AlignIO.write(edited_alignment, open(alignment_file_edited, "w"), FASTA_FILE_TYPE)
 
 
 
