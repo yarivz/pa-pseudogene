@@ -4,35 +4,14 @@ import os
 from subprocess import run
 
 from Bio import SeqIO, AlignIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 
 from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLUSTERS_ALIGNMENTS_DIR, \
     NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, DATA_DIR, ALIGNMENT_STRAIN_PATTERN
 from logging_config import worker_configurer
 
 STRAINS_COUNT = 2552
-
-
-class PadSeqRecord(SeqIO.SeqRecord):
-    def __init__(self, idx, seqlen):
-        super.__init__((seqlen * '-'), "[%d] padding" % idx)
-
-    def __le___(self, other):
-        super.__le__(other)
-
-    def __eq__(self, other):
-        super.__eq__(other)
-
-    def __ne__(self, other):
-        super.__ne__(other)
-
-    def __gt__(self, other):
-        super.__gt__(other)
-
-    def __ge__(self, other):
-        super.__ge__(other)
-
-    def __lt__(self, other):
-        super.__lt__(other)
 
 
 def perform_clustering_on_proteins(aggregated_proteins_file_path):
@@ -191,13 +170,13 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
                 if strain_idx < seq_strain_idx:
                     for i in range(seq_strain_idx - strain_idx):
                         logger.info("adding padded seq at idx %d" % (strain_idx + i))
-                        edited_alignment.insert(strain_idx + i, PadSeqRecord(strain_idx + i, alignment_seq_len))
+                        edited_alignment._records.insert(strain_idx + i, SeqRecord(Seq(alignment_seq_len * '-'), id="[%d] padding" % (strain_idx + i)))
                     strain_idx += (seq_strain_idx - strain_idx + 1)
                     continue
                 strain_idx += 1
             else:
                 logger.info("adding padded seq at end of alignment list")
-                edited_alignment.insert(strain_idx, PadSeqRecord(strain_idx, alignment_seq_len))
+                edited_alignment.insert(strain_idx, SeqRecord(Seq(alignment_seq_len * '-'), id="[%d] padding" % strain_idx))
                 strain_idx += 1
         alignment_file_edited = os.path.join(ALIGNMENTS_FOR_TREE_DIR, alignment_file)
         logger.info("Finished padding alignment - writing to file %s" % alignment_file_edited)
