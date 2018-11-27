@@ -117,13 +117,16 @@ def prepare_alignments_for_tree(log_queue):
         w.join()
     logger.info("Finished editing all alignments, concatenating")
     edited_alignment_files = os.listdir(ALIGNMENTS_FOR_TREE_DIR)
-    concatenated_alignment = AlignIO.MultipleSeqAlignment()
+    concatenated_alignment = None
     concatenated_alignment_file = os.path.join(DATA_DIR, "all_alignments")
     for edited_alignment_file in edited_alignment_files:
         logger.info("Concatenating alignment %s" % edited_alignment_file)
         with open(os.path.join(ALIGNMENTS_FOR_TREE_DIR, edited_alignment_file), "r") as f:
             edited_alignment = AlignIO.read(f, FASTA_FILE_TYPE)
-            concatenated_alignment += edited_alignment[:, :]
+            if not concatenated_alignment:
+                concatenated_alignment = edited_alignment[:, :]
+            else:
+                concatenated_alignment += edited_alignment[:, :]
     AlignIO.write(concatenated_alignment, open(concatenated_alignment_file, "w"), FASTA_FILE_TYPE)
     logger.info("Finished concatenating all alignments, written to %s" % concatenated_alignment_file)
 
