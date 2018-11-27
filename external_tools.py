@@ -154,7 +154,7 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
             break
         logger.info("Editing alignment %s" % alignment_file)
         alignment = AlignIO.read(open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, alignment_file), "r"), FASTA_FILE_TYPE)
-        alignment_without_invariants = AlignIO.MultipleSeqAlignment()
+        alignment_without_invariants = AlignIO.MultipleSeqAlignment([])
         for col_idx in range(alignment.get_alignment_length()):
             col = alignment[:, col_idx]
             if not all(c == col[0] for c in col):
