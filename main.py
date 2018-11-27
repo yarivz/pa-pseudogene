@@ -7,7 +7,7 @@ import pandas
 
 from data_visualization import create_1st_stage_charts, create_2nd_stage_charts
 from external_tools import perform_clustering_on_proteins, perform_clustering_on_cds, \
-    perform_alignment_on_core_clusters
+    perform_alignment_on_core_clusters, prepare_alignments_for_tree
 from nucleotide_preprocessor import create_representatives_and_pseudogenes_file
 from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, \
     CD_HIT_CLUSTERS_OUTPUT_FILE, CD_HIT_EST_CLUSTER_REPS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
@@ -123,6 +123,8 @@ def main():
             export_protein_clusters_to_nucleotide_fasta_files()
         if args.perform_alignment_on_clusters:
             perform_alignment_on_core_clusters(log_queue)
+        if args.prepare_alignments_for_tree:
+            prepare_alignments_for_tree(log_queue)
 
         logger.info("Finished work, exiting")
     finally:
@@ -160,6 +162,8 @@ def init_args_parser():
                         help='Export protein core clusters to fasta files')
     parser.add_argument('-paoc', '--perform_alignment_on_clusters', action="store_true",
                         help='Perform MAFFT alignment & Gblocks pruning on core clusters fasta files')
+    parser.add_argument('-paft', '--prepare_alignments_for_tree', action="store_true",
+                        help='Edit, pad and concat all alignments for creating a phylogenetic tree')
     parser.add_argument('-in', '--input', help='Get input file')
     parser.add_argument('-out', '--output', help='Get output file')
     return parser
