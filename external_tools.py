@@ -176,7 +176,7 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
                 strain_idx += 1
             else:
                 logger.info("adding padded seq at end of alignment list")
-                edited_alignment.insert(strain_idx, SeqRecord(Seq(alignment_seq_len * '-'), id="[%d] padding" % strain_idx))
+                edited_alignment.append(SeqRecord(Seq(alignment_seq_len * '-'), id="[%d] padding" % strain_idx))
                 strain_idx += 1
         alignment_file_edited = os.path.join(ALIGNMENTS_FOR_TREE_DIR, alignment_file)
         logger.info("Finished padding alignment - writing to file %s" % alignment_file_edited)
