@@ -7,7 +7,8 @@ from subprocess import run
 from Bio import SeqIO, AlignIO
 
 from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLUSTERS_ALIGNMENTS_DIR, STRAINS_DIR, \
-    NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, CLUSTER_STRAIN_PATTERN, DATA_DIR
+    NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, CLUSTER_STRAIN_PATTERN, DATA_DIR, \
+    ALIGNMENT_STRAIN_PATTERN
 from logging_config import worker_configurer
 
 STRAINS_COUNT = 2552
@@ -159,18 +160,19 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
             col = alignment[:, col_idx:col_idx + 1]
             col_str = alignment[:, col_idx]
             if not all(c == col_str[0] for c in col_str):
+                logger.info("Adding col %d to edited alignment" % col_idx)
                 if not edited_alignment:
                     edited_alignment = col
                 else:
                     edited_alignment += col
         alignment_seq_len = edited_alignment.get_alignment_length()
-        logger.debug("alignment_seq_len = %d" % alignment_seq_len)
+        logger.info("alignment_seq_len = %d" % alignment_seq_len)
         strain_idx = 0
         while strain_idx < STRAINS_COUNT:
             logger.info("in while - strain_idx = %d" % strain_idx)
             if len(edited_alignment) > strain_idx:
                 seq = edited_alignment[strain_idx]
-                seq_strain_idx = int(CLUSTER_STRAIN_PATTERN.match(seq.id).group(1))
+                seq_strain_idx = int(ALIGNMENT_STRAIN_PATTERN.match(seq.id).group(1))
                 logger.info("checking if strain idx %d < seq_strain_idx %d" % (strain_idx, seq_strain_idx))
                 if strain_idx < seq_strain_idx:
                     for i in range(seq_strain_idx - strain_idx):
