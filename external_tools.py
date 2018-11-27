@@ -154,11 +154,14 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
             break
         logger.info("Editing alignment %s" % alignment_file)
         alignment = AlignIO.read(open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, alignment_file), "r"), FASTA_FILE_TYPE)
-        alignment_without_invariants = AlignIO.MultipleSeqAlignment([])
+        alignment_without_invariants = None
         for col_idx in range(alignment.get_alignment_length()):
             col = alignment[:, col_idx]
             if not all(c == col[0] for c in col):
-                alignment_without_invariants += col
+                if not alignment_without_invariants:
+                    alignment_without_invariants = col
+                else:
+                    alignment_without_invariants += col
         alignment_with_padding = alignment_without_invariants[:]
         alignment_seq_len = len(alignment_with_padding[0].seq)
         logger.debug("alignment_seq_len = %d" % alignment_seq_len)
