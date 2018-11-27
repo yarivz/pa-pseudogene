@@ -156,13 +156,14 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
         alignment = AlignIO.read(open(os.path.join(CLUSTERS_ALIGNMENTS_DIR, alignment_file), "r"), FASTA_FILE_TYPE)
         edited_alignment = None
         for col_idx in range(alignment.get_alignment_length()):
-            col = alignment[:, col_idx]
-            if not all(c == col[0] for c in col):
+            col = alignment[:, col_idx:col_idx + 1]
+            col_str = alignment[:, col_idx]
+            if not all(c == col_str[0] for c in col_str):
                 if not edited_alignment:
                     edited_alignment = col
                 else:
                     edited_alignment += col
-        alignment_seq_len = len(edited_alignment[0].seq)
+        alignment_seq_len = edited_alignment.get_alignment_length()
         logger.debug("alignment_seq_len = %d" % alignment_seq_len)
         strain_idx = 0
         while strain_idx < STRAINS_COUNT:
