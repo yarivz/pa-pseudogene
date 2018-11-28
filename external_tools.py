@@ -11,7 +11,7 @@ from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLU
     NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, DATA_DIR, ALIGNMENT_STRAIN_PATTERN
 from logging_config import worker_configurer
 
-STRAINS_COUNT = 2552
+STRAINS_COUNT = 2587
 
 
 def perform_clustering_on_proteins(aggregated_proteins_file_path):
