@@ -464,3 +464,12 @@ def shorten_seq_names_in_clusters():
                         cds.description = ''
                 with open(os.path.join(CLUSTERS_NT_SEQS_DIR, cluster_file_short_seq_names), "w") as f2:
                     SeqIO.write(cluster_cds, f2, FASTA_FILE_TYPE)
+
+
+def build_strain_names_map():
+    strain_names_map = {}
+    downloaded_strains = os.listdir(STRAINS_DIR)
+    for strain_dir in downloaded_strains:
+        strain_index = get_strain_index(strain_dir)
+        strain_names_map[strain_index] = strain_dir
+    return strain_names_map

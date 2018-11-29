@@ -9,6 +9,7 @@ from Bio.SeqRecord import SeqRecord
 
 from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLUSTERS_ALIGNMENTS_DIR, \
     NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, DATA_DIR, ALIGNMENT_STRAIN_PATTERN
+from data_analysis import build_strain_names_map
 from logging_config import worker_configurer
 
 STRAINS_COUNT = 2587
@@ -185,6 +186,20 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
         logger.info("Finished padding alignment - writing to file %s" % alignment_file_edited)
         AlignIO.write(edited_alignment, open(alignment_file_edited, "w"), FASTA_FILE_TYPE)
 
+
+def format_concatenated_alignment():
+    strain_names_map = build_strain_names_map()
+    strains_to_remove = []
+    tree_alignment = AlignIO.read(open(os.path.join(DATA_DIR, "all_alignments"), "r"), FASTA_FILE_TYPE)
+    for id, strain in zip(range(STRAINS_COUNT), tree_alignment):
+        if all(c == '-' for c in strain.seq):
+            strains_to_remove.append(id)
+        else:
+            strain.id = "[" + id + "]" + strain_names_map[id]
+            strain.description = ''
+    for id in strains_to_remove:
+        tree_alignment._records.pop(id)
+    AlignIO.write(tree_alignment, open(os.path.join(DATA_DIR, "tree_alignment"), "w"), FASTA_FILE_TYPE)
 
 
 
