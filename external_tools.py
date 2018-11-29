@@ -188,14 +188,17 @@ def perform_alignment_editing(worker_id, job_queue, configurer, log_queue):
 
 
 def format_concatenated_alignment():
+    logger = logging.getLogger(__name__)
     strain_names_map = build_strain_names_map()
     strains_to_remove = []
     tree_alignment = AlignIO.read(open(os.path.join(DATA_DIR, "all_alignments"), "r"), FASTA_FILE_TYPE)
     for id, strain in zip(range(STRAINS_COUNT), tree_alignment):
         if all(c == '-' for c in strain.seq):
+            logger.info("remove strain %d" % id)
             strains_to_remove.append(id)
         else:
-            strain.id = "[" + id + "]" + strain_names_map[id]
+            logger.info("edit strain %d" % id)
+            strain.id = "[" + str(id) + "]" + strain_names_map[id]
             strain.description = ''
     for id in strains_to_remove:
         tree_alignment._records.pop(id)
