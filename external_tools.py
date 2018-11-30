@@ -192,17 +192,17 @@ def format_concatenated_alignment():
     strain_names_map = build_strain_names_map()
     strains_to_remove = []
     tree_alignment = AlignIO.read(open(os.path.join(DATA_DIR, "all_alignments"), "r"), FASTA_FILE_TYPE)
+    tree_alignment_filtered = AlignIO.MultipleSeqAlignment([])
     for id, strain in zip(range(STRAINS_COUNT), tree_alignment):
         if all(c == '-' for c in strain.seq):
-            logger.info("remove strain %d" % id)
-            strains_to_remove.append(id)
+            logger.info("filtered strain %d" % id)
+            strains_to_remove.append(tree_alignment._records.index(strain))
         else:
             logger.info("edit strain %d" % id)
             strain.id = "[" + str(id) + "]" + strain_names_map[id]
             strain.description = ''
-    for id in strains_to_remove:
-        tree_alignment._records.pop(id)
-    AlignIO.write(tree_alignment, open(os.path.join(DATA_DIR, "tree_alignment"), "w"), FASTA_FILE_TYPE)
+            tree_alignment_filtered.append(strain)
+    AlignIO.write(tree_alignment_filtered, open(os.path.join(DATA_DIR, "filtered_tree_alignment"), "w"), FASTA_FILE_TYPE)
 
 
 
