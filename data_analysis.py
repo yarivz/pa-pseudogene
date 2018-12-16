@@ -497,7 +497,7 @@ def get_strains_mlst_genes():
                     genes_found += 1
                     gene_variants = mlst_variants_records[mlst_gene]
                     for variant in gene_variants:
-                        if strain_gene.seq.equals(variant.seq):
+                        if strain_gene.seq == variant.seq:
                             variant_id = variant.id[5:]
                             strains_mlst_vectors.loc[strain_index][mlst_gene] = variant_id
                             break
@@ -505,6 +505,8 @@ def get_strains_mlst_genes():
         cds_file.close()
     return strains_mlst_vectors
 
+#TODO compare each strain vector to allelic profiles table - pandas.read_table(MLST_ALLELIC_PROFILE_PATH)
+# Need to remove last column of clonal complex
 
 
 
