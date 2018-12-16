@@ -8,11 +8,9 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 
 from constants import CD_HIT_CLUSTER_REPS_OUTPUT_FILE, CLUSTERS_NT_SEQS_DIR, CLUSTERS_ALIGNMENTS_DIR, \
-    NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, DATA_DIR, ALIGNMENT_STRAIN_PATTERN
+    NUMBER_OF_PROCESSES, FASTA_FILE_TYPE, ALIGNMENTS_FOR_TREE_DIR, DATA_DIR, ALIGNMENT_STRAIN_PATTERN, STRAINS_COUNT
 from data_analysis import build_strain_names_map
 from logging_config import worker_configurer
-
-STRAINS_COUNT = 2587
 
 
 def perform_clustering_on_proteins(aggregated_proteins_file_path):
@@ -205,12 +203,3 @@ def format_concatenated_alignment():
 
 
 
-        # for strain_idx, seq in zip_longest(range(STRAINS_COUNT), alignment_without_invariants):
-        #     if seq is not None:
-        #         seq_strain_idx = int(CLUSTER_STRAIN_PATTERN.match(seq.id).group(1))
-        #         logger.debug("checking strain idx %d vs seq_strain_idx %d" % (strain_idx, seq_strain_idx))
-        #         if strain_idx < seq_strain_idx:
-        #             for i in range(seq_strain_idx - strain_idx):
-        #                 alignment_with_padding.insert(strain_idx + i, PadSeqRecord(strain_idx + i, alignment_len))
-        #     else:
-        #         alignment_with_padding.insert(strain_idx, PadSeqRecord(strain_idx, alignment_len))

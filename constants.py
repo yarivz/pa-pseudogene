@@ -1,6 +1,8 @@
 import os
 import re
 
+STRAINS_COUNT = 2587
+
 DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
@@ -61,3 +63,6 @@ SECOND_STAGE_STATS_CSV = os.path.join(DATA_DIR, "2nd_stage_stats.csv")
 BLAST_RESULTS_FILE = os.path.join(DATA_DIR, "result_blastn_pseudogenes")
 COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH = os.path.join(DATA_DIR, "combined_strain_pseudogenes_without_blast_hit.fasta")
 BLAST_PSEUDOGENE_PATTERN = re.compile("\[(\d+)\]\[(\d+)\]\[pseudo\]")
+
+MLST_GENES = ["acsA", "aroE", "guaA", "mutL", "nuoD", "ppsA", "trpE"]
+MLST_ALLELIC_PROFILE_PATH = "mlst_paeruginosa.txt"

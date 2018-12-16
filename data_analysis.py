@@ -10,7 +10,7 @@ from constants import STRAINS_DIR, CDS_FROM_GENOMIC_PATTERN, GENOMIC_PATTERN, ST
     CLUSTER_2ND_STAGE_SEQ_LEN_PATTERN, CD_HIT_EST_MULTIPLE_PROTEIN_CLUSTERS_OUTPUT_FILE, COMBINED_CDS_FILE_PATH, \
     FASTA_FILE_TYPE, COMBINED_STRAIN_REPS_CDS_PATH, COMBINED_STRAIN_PSEUDOGENES_PATH, BLAST_RESULTS_FILE, \
     BLAST_PSEUDOGENE_PATTERN, COMBINED_PSEUDOGENES_WITHOUT_BLAST_HIT_PATH, CLUSTERS_NT_SEQS_DIR, \
-    PROTEIN_CORE_CLUSTERS_PKL
+    PROTEIN_CORE_CLUSTERS_PKL, MLST_GENES, STRAINS_COUNT, DATA_DIR
 from nucleotide_preprocessor import get_strain_index
 
 logger = logging.getLogger(__name__)
@@ -408,7 +408,6 @@ def get_core_clusters():
 
 def export_protein_clusters_to_nucleotide_fasta_files():
     import pickle
-    downloaded_strains = os.listdir(STRAINS_DIR)
     if os.path.exists(PROTEIN_CORE_CLUSTERS_PKL):
         logger.info("Loading protein core clusters from pickle")
         with open(PROTEIN_CORE_CLUSTERS_PKL, "rb") as f:
@@ -421,16 +420,7 @@ def export_protein_clusters_to_nucleotide_fasta_files():
     if not os.path.exists(CLUSTERS_NT_SEQS_DIR):
         os.makedirs(CLUSTERS_NT_SEQS_DIR)
 
-    for strain_dir in downloaded_strains:
-        strain_index = get_strain_index(strain_dir)
-        strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
-        cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
-        if cds_file_name is None:
-            raise RuntimeError("Failed to find a cds file for strain %s" % str(strain_dir))
-        if cds_file_name.endswith('gz'):
-            cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
-        else:
-            cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
+    for strain_index, strain_dir, cds_file in iterate_strains_cds():
         strain_cds = list(SeqIO.parse(cds_file, FASTA_FILE_TYPE))
         logger.info("Parsing strain %s index %d" % (str(strain_dir), strain_index))
         for cluster in core_clusters.values():
@@ -473,3 +463,51 @@ def build_strain_names_map():
         strain_index = get_strain_index(strain_dir)
         strain_names_map[strain_index] = strain_dir
     return strain_names_map
+
+
+def iterate_strains_cds():
+    """Iterate over the CDS file for each downloaded strain and return the strain index and cds file handle"""
+    downloaded_strains = os.listdir(STRAINS_DIR)
+    for strain_dir in downloaded_strains:
+        strain_index = get_strain_index(strain_dir)
+        strain_dir_files = os.listdir(os.path.join(STRAINS_DIR, strain_dir))
+        cds_file_name = [f for f in strain_dir_files if CDS_FROM_GENOMIC_PATTERN in f][0]
+        if cds_file_name is None:
+            raise RuntimeError("Failed to find a cds file for strain %s" % str(strain_dir))
+        if cds_file_name.endswith('gz'):
+            cds_file = gzip.open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name), 'rt')
+        else:
+            cds_file = open(os.path.join(STRAINS_DIR, strain_dir, cds_file_name))
+        yield strain_index, strain_dir, cds_file
+
+
+def get_strains_mlst_genes():
+    mlst_variants_records = {}
+    for gene in MLST_GENES:
+        mlst_variants_records[gene] = list(SeqIO.parse(open(gene + ".fas"), FASTA_FILE_TYPE))
+    strains_mlst_vectors = pandas.DataFrame(index=range(STRAINS_COUNT), columns=("acsA", "aroE", "guaA", "mutL", "nuoD", "ppsA", "trpE"))
+    for strain_index, strain_dir, cds_file in iterate_strains_cds():
+        strain_cds = SeqIO.parse(cds_file, FASTA_FILE_TYPE)
+        genes_found = 0
+        for strain_gene in strain_cds:
+            if genes_found == len(MLST_GENES):
+                break
+            for mlst_gene in MLST_GENES:
+                if mlst_gene in strain_gene.description:
+                    genes_found += 1
+                    gene_variants = mlst_variants_records[mlst_gene]
+                    for variant in gene_variants:
+                        if strain_gene.seq.equals(variant.seq):
+                            variant_id = variant.id[5:]
+                            strains_mlst_vectors.loc[strain_index][mlst_gene] = variant_id
+                            break
+                    break
+        cds_file.close()
+    return strains_mlst_vectors
+
+
+
+
+
+
+
