@@ -10,7 +10,7 @@ from constants import NUMBER_OF_PROCESSES, STRAIN_INDEX_FILE, PROTEIN_FILE_PATTE
     CDS_FROM_GENOMIC_PATTERN
 
 NCBI_FTP_SITE = "ftp.ncbi.nlm.nih.gov"
-PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa/latest_assembly_versions"
+PA_LATEST_REFSEQ_URL = "/genomes/refseq/bacteria/Pseudomonas_aeruginosa"
 ftp_handle = FTP(NCBI_FTP_SITE)
 #TODO add syncing for already downloaded strains
 
@@ -25,6 +25,10 @@ def download_valid_strains(worker_id, job_queue, configurer, log_queue, download
     ftp_con = FTP(NCBI_FTP_SITE)
     ftp_con.login()
     ftp_con.cwd(PA_LATEST_REFSEQ_URL)
+    line_reader = StringIO()
+    ftp_con.retrlines('RETR ' + "assembly_summary.txt", line_reader.write)
+    #TODO need to read each line from the tab delimited file and extract the accession number and ftp url
+
     num_of_strains_downloaded = 0
     while True:
         strain_dir = job_queue.get()

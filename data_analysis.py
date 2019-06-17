@@ -1,5 +1,6 @@
 import gzip
 import logging
+import sys
 from collections import defaultdict
 import os
 import pandas
@@ -485,7 +486,7 @@ def get_strains_mlst_genes():
     mlst_variants_records = {}
     for gene in MLST_GENES:
         mlst_variants_records[gene] = list(SeqIO.parse(open(gene + ".fas"), FASTA_FILE_TYPE))
-    strains_mlst_vectors = pandas.DataFrame(index=range(STRAINS_COUNT), columns=("acsA", "aroE", "guaA", "mutL", "nuoD", "ppsA", "trpE"))
+    strains_mlst_vectors = pandas.DataFrame(index=range(STRAINS_COUNT), columns=MLST_GENES)
     for strain_index, strain_dir, cds_file in iterate_strains_cds():
         strain_cds = SeqIO.parse(cds_file, FASTA_FILE_TYPE)
         genes_found = 0
@@ -494,10 +495,13 @@ def get_strains_mlst_genes():
                 break
             for mlst_gene in MLST_GENES:
                 if mlst_gene in strain_gene.description:
+                    logger.info("found mlst gene " + mlst_gene + " in strain " + strain_gene.id + ", idx " + strain_index)
                     genes_found += 1
                     gene_variants = mlst_variants_records[mlst_gene]
                     for variant in gene_variants:
-                        if strain_gene.seq == variant.seq:
+                        if str(variant.seq) in str(strain_gene.seq):
+                            logger.info("found match: gene " + mlst_gene + ", variant " + variant.id + ", seq: " + variant.seq + ""
+                                         "contained in strain gene" + strain_gene.id + ", seq: " + strain_gene.seq)
                             variant_id = variant.id[5:]
                             strains_mlst_vectors.loc[strain_index][mlst_gene] = variant_id
                             break
@@ -506,9 +510,7 @@ def get_strains_mlst_genes():
     return strains_mlst_vectors
 
 #TODO compare each strain vector to allelic profiles table - pandas.read_table(MLST_ALLELIC_PROFILE_PATH)
-# Need to remove last column of clonal complex
-
-
+#TODO Build tree diagram and paint with mlst value per strain
 
 
 

@@ -5,7 +5,6 @@ STRAINS_COUNT = 2587
 
 DATA_DIR = os.getcwd() + os.sep + "data"
 STRAINS_DIR = DATA_DIR + os.sep + "strains"
-STRAINS_DIR = DATA_DIR + os.sep + "strains"
 PICKLES_DIR = DATA_DIR + os.sep + "pickles"
 CLUSTERS_DIR = DATA_DIR + os.sep + "clusters"
 CLUSTERS_NT_SEQS_DIR = DATA_DIR + os.sep + "clusters_for_alignment"

@@ -16,7 +16,7 @@ from constants import STRAINS_DIR, COMBINED_PROTEINS_FILE_PATH, \
 from data_analysis import get_1st_stage_stats_per_strain, get_2nd_stage_stats_per_strain, \
     get_2nd_stage_stats_per_cluster, filter_2nd_stage_clusters_with_multiple_proteins, \
     split_2nd_stage_combined_fasta_to_reps_pseudogenes, get_pseudogenes_without_blast_hits_fasta, get_core_clusters, \
-    export_protein_clusters_to_nucleotide_fasta_files
+    export_protein_clusters_to_nucleotide_fasta_files, get_strains_mlst_genes
 from ftp_handler import download_strain_files
 from logging_config import listener_process, listener_configurer, worker_configurer
 from protein_preprocessor import create_all_strains_file_with_indices
@@ -170,4 +170,4 @@ def init_args_parser():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(get_strains_mlst_genes())
